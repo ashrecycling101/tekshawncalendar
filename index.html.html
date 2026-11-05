@@ -171,10 +171,10 @@
                     <table class="w-full text-left border-collapse">
                         <thead>
                             <tr class="bg-slate-100 border-b border-slate-200 text-xs font-semibold text-slate-600 uppercase tracking-wider sticky top-0 z-10">
-                                <th class="p-3">Date & Time</th>
+                                <th class="p-3">Date & Time Range</th>
+                                <th class="p-3">Customer Name</th>
                                 <th class="p-3">Part Number</th>
                                 <th class="p-3">Status</th>
-                                <th class="p-3">Name</th>
                                 <th class="p-3">Address</th>
                                 <th class="p-3">Mobile</th>
                                 <th class="p-3">Remarks</th>
@@ -201,21 +201,16 @@
             <form id="eventForm" onsubmit="saveEvent(event)" class="p-6 space-y-4 max-h-[80vh] overflow-y-auto custom-scrollbar">
                 <input type="hidden" id="eventId">
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Date *</label>
-                        <input type="date" id="eventDate" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Time *</label>
-                        <input type="time" id="eventTime" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    </div>
+                <!-- Primary Field: Customer Name First -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Customer Name *</label>
+                    <input type="text" id="eventCustomerName" required placeholder="Client or Company Name" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium">
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Part Number *</label>
-                        <input type="text" id="eventPartNumber" required placeholder="e.g. PN-9842-AX" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Date *</label>
+                        <input type="date" id="eventDate" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Status *</label>
@@ -228,10 +223,22 @@
                     </div>
                 </div>
 
+                <!-- Time From and Time To -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Name *</label>
-                        <input type="text" id="eventCustomerName" required placeholder="Client or Company Name" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Time From *</label>
+                        <input type="time" id="eventTimeFrom" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Time To *</label>
+                        <input type="time" id="eventTimeTo" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Part Number *</label>
+                        <input type="text" id="eventPartNumber" required placeholder="e.g. PN-9842-AX" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Mobile *</label>
@@ -269,13 +276,13 @@
             </div>
             <div class="p-6 space-y-4">
                 <div>
-                    <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">Part Number</span>
-                    <p id="detailPartNumber" class="text-lg font-bold text-slate-900 font-mono">PN-0000</p>
+                    <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">Customer Name</span>
+                    <p id="detailName" class="text-lg font-bold text-slate-900">Name Here</p>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">Customer Name</span>
-                        <p id="detailName" class="text-sm font-medium text-slate-800">Name Here</p>
+                        <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">Part Number</span>
+                        <p id="detailPartNumber" class="text-sm font-bold text-blue-600 font-mono">PN-0000</p>
                     </div>
                     <div>
                         <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">Mobile</span>
@@ -320,10 +327,11 @@
             {
                 id: 'evt-101',
                 date: new Date().toISOString().split('T')[0],
-                time: '09:30',
+                timeFrom: '09:30',
+                timeTo: '11:00',
+                name: 'Acme Logistics Corp',
                 partNumber: 'PN-CHIP-408',
                 status: 'Pending',
-                name: 'Acme Logistics Corp',
                 address: '104 Industrial Pkwy, Sector 4, Metro City',
                 mobile: '+1 (555) 382-9100',
                 remarks: 'Handle with extreme care. Fragile electronic module.'
@@ -331,10 +339,11 @@
             {
                 id: 'evt-102',
                 date: new Date().toISOString().split('T')[0],
-                time: '14:00',
+                timeFrom: '14:00',
+                timeTo: '16:30',
+                name: 'Apex Manufacturing',
                 partNumber: 'PN-VALVE-88X',
                 status: 'In Progress',
-                name: 'Apex Manufacturing',
                 address: '782 Titanium Ave, Bay Area, CA',
                 mobile: '+1 (555) 921-4820',
                 remarks: 'Call 30 minutes prior to arrival at loading dock #4.'
@@ -357,6 +366,13 @@
 
         // Initialize App on Load
         window.addEventListener('DOMContentLoaded', () => {
+            // Backward compatibility check for older saved data records with single time field
+            events.forEach(e => {
+                if (!e.timeFrom && e.time) {
+                    e.timeFrom = e.time;
+                    e.timeTo = e.time;
+                }
+            });
             renderApp();
         });
 
@@ -458,7 +474,7 @@
             if (!activeFilters[evt.status]) return false;
             if (searchQuery) {
                 const q = searchQuery.toLowerCase();
-                const matchStr = `${evt.partNumber} ${evt.name} ${evt.address} ${evt.mobile} ${evt.remarks}`.toLowerCase();
+                const matchStr = `${evt.name} ${evt.partNumber} ${evt.address} ${evt.mobile} ${evt.remarks}`.toLowerCase();
                 if (!matchStr.includes(q)) return false;
             }
             return true;
@@ -480,7 +496,6 @@
 
             let cellsHTML = '';
 
-            // Previous month trailing days
             for (let i = firstDayIndex - 1; i >= 0; i--) {
                 const dayNum = prevLastDayDate - i;
                 const prevMonth = month === 0 ? 11 : month - 1;
@@ -489,14 +504,12 @@
                 cellsHTML += renderMonthCell(dayNum, dateStr, true, false);
             }
 
-            // Current month days
             for (let i = 1; i <= lastDayDate; i++) {
                 const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
                 const isToday = (dateStr === todayStr);
                 cellsHTML += renderMonthCell(i, dateStr, false, isToday);
             }
 
-            // Next month leading days to complete 42 cells (6 rows)
             const totalCellsSoFar = firstDayIndex + lastDayDate;
             const remainingCells = totalCellsSoFar <= 35 ? 35 - totalCellsSoFar : 42 - totalCellsSoFar;
             for (let i = 1; i <= remainingCells; i++) {
@@ -511,16 +524,16 @@
 
         function renderMonthCell(dayNum, dateStr, isMuted, isToday) {
             const dayEvents = events.filter(e => e.date === dateStr && eventPassesFilters(e));
-            dayEvents.sort((a,b) => a.time.localeCompare(b.time));
+            dayEvents.sort((a,b) => (a.timeFrom || '').localeCompare(b.timeFrom || ''));
 
             let eventsHTML = '';
             dayEvents.forEach(evt => {
+                const timeStr = evt.timeFrom ? `${evt.timeFrom}${evt.timeTo ? '-' + evt.timeTo : ''}` : '';
                 eventsHTML += `
                     <div onclick="event.stopPropagation(); showDetailModal('${evt.id}')" class="px-2 py-1 mb-1 rounded text-xs font-medium truncate flex items-center space-x-1.5 cursor-pointer shadow-sm hover:opacity-95 transition bg-white border border-slate-200/80">
                         <span class="w-2 h-2 rounded-full shrink-0 ${getStatusDot(evt.status)}"></span>
-                        <span class="font-bold text-slate-800 shrink-0">${evt.time}</span>
-                        <span class="font-mono text-blue-600 font-semibold shrink-0">${evt.partNumber}</span>
-                        <span class="text-slate-600 truncate">${evt.name}</span>
+                        <span class="font-bold text-slate-800 truncate">${evt.name}</span>
+                        ${timeStr ? `<span class="text-[10px] text-slate-400 shrink-0">(${timeStr})</span>` : ''}
                     </div>
                 `;
             });
@@ -567,7 +580,6 @@
             }
             header.innerHTML = headerHTML;
 
-            // Render Hourly rows (08:00 to 18:00)
             let bodyHTML = '';
             for (let hour = 8; hour <= 18; hour++) {
                 const timeLabel = `${String(hour).padStart(2, '0')}:00`;
@@ -575,16 +587,16 @@
                 bodyHTML += `<div class="p-2 text-xs font-medium text-slate-400 text-right pr-4 border-r border-slate-200 bg-slate-50">${timeLabel}</div>`;
 
                 weekDays.forEach(dateStr => {
-                    const matchedEvents = events.filter(e => e.date === dateStr && e.time.startsWith(String(hour).padStart(2, '0')) && eventPassesFilters(e));
+                    const matchedEvents = events.filter(e => e.date === dateStr && (e.timeFrom || '').startsWith(String(hour).padStart(2, '0')) && eventPassesFilters(e));
                     let cellEventsHTML = '';
                     matchedEvents.forEach(evt => {
                         cellEventsHTML += `
                             <div onclick="event.stopPropagation(); showDetailModal('${evt.id}')" class="p-1.5 mb-1 rounded bg-white border border-slate-200 shadow-sm cursor-pointer hover:border-blue-300 transition text-xs">
-                                <div class="flex items-center space-x-1 font-semibold text-slate-800">
-                                    <span class="w-2 h-2 rounded-full ${getStatusDot(evt.status)}"></span>
-                                    <span class="font-mono text-blue-600">${evt.partNumber}</span>
+                                <div class="flex items-center space-x-1 font-semibold text-slate-800 truncate">
+                                    <span class="w-2 h-2 rounded-full ${getStatusDot(evt.status)} shrink-0"></span>
+                                    <span class="truncate">${evt.name}</span>
                                 </div>
-                                <div class="text-slate-600 truncate mt-0.5">${evt.name}</div>
+                                <div class="text-[10px] text-slate-400 font-mono mt-0.5">${evt.timeFrom} - ${evt.timeTo || ''}</div>
                             </div>
                         `;
                     });
@@ -613,7 +625,7 @@
             let bodyHTML = '';
             for (let hour = 7; hour <= 20; hour++) {
                 const timeLabel = `${String(hour).padStart(2, '0')}:00`;
-                const matchedEvents = events.filter(e => e.date === dateStr && e.time.startsWith(String(hour).padStart(2, '0')) && eventPassesFilters(e));
+                const matchedEvents = events.filter(e => e.date === dateStr && (e.timeFrom || '').startsWith(String(hour).padStart(2, '0')) && eventPassesFilters(e));
 
                 let eventsHTML = '';
                 matchedEvents.forEach(evt => {
@@ -622,8 +634,8 @@
                             <div class="space-y-1">
                                 <div class="flex items-center space-x-2">
                                     <span class="px-2.5 py-0.5 text-xs font-semibold rounded-full border ${getStatusBadgeClass(evt.status)}">${evt.status}</span>
-                                    <span class="font-mono font-bold text-blue-600 text-sm">${evt.partNumber}</span>
-                                    <span class="text-xs text-slate-500"><i class="fa-regular fa-clock mr-1"></i>${evt.time}</span>
+                                    <span class="text-xs text-slate-500 font-medium"><i class="fa-regular fa-clock mr-1"></i>${evt.timeFrom} - ${evt.timeTo}</span>
+                                    <span class="font-mono font-semibold text-blue-600 text-xs bg-blue-50 px-2 py-0.5 rounded">${evt.partNumber}</span>
                                 </div>
                                 <div class="font-bold text-slate-900 text-base">${evt.name}</div>
                                 <div class="text-xs text-slate-600 flex items-center space-x-1"><i class="fa-solid fa-location-dot text-rose-500"></i><span>${evt.address}</span></div>
@@ -653,9 +665,8 @@
             tbody.innerHTML = '';
 
             const filtered = events.filter(eventPassesFilters);
-            filtered.sort((a,b) => `${a.date} ${a.time}`.localeCompare(`${b.date} ${b.time}`));
+            filtered.sort((a,b) => `${a.date} ${a.timeFrom || ''}`.localeCompare(`${b.date} ${b.timeFrom || ''}`));
 
-            document.getElementById('listCountBadge.innerText', `${filtered.length} entries`);
             document.getElementById('listCountBadge').innerText = `${filtered.length} entries`;
 
             if (filtered.length === 0) {
@@ -669,11 +680,11 @@
                     <tr class="hover:bg-slate-50 transition cursor-pointer" onclick="showDetailModal('${evt.id}')">
                         <td class="p-3 font-medium text-slate-800 whitespace-nowrap">
                             <div class="text-slate-900">${evt.date}</div>
-                            <div class="text-xs text-slate-500 font-mono">${evt.time}</div>
+                            <div class="text-xs text-slate-500 font-mono">${evt.timeFrom} - ${evt.timeTo}</div>
                         </td>
-                        <td class="p-3 font-mono font-bold text-blue-600">${evt.partNumber}</td>
+                        <td class="p-3 font-bold text-slate-900">${evt.name}</td>
+                        <td class="p-3 font-mono font-semibold text-blue-600">${evt.partNumber}</td>
                         <td class="p-3"><span class="px-2.5 py-1 text-xs font-semibold rounded-full border ${getStatusBadgeClass(evt.status)}">${evt.status}</span></td>
-                        <td class="p-3 font-medium text-slate-900">${evt.name}</td>
                         <td class="p-3 text-slate-600 max-w-xs truncate">${evt.address}</td>
                         <td class="p-3 text-slate-600 font-mono text-xs">${evt.mobile}</td>
                         <td class="p-3 text-slate-500 text-xs max-w-xs truncate">${evt.remarks || '-'}</td>
@@ -764,7 +775,8 @@
             document.getElementById('eventForm').reset();
             document.getElementById('eventId').value = '';
             document.getElementById('eventDate').value = currentDate.toISOString().split('T')[0];
-            document.getElementById('eventTime').value = '09:00';
+            document.getElementById('eventTimeFrom').value = '09:00';
+            document.getElementById('eventTimeTo').value = '10:00';
             
             const modal = document.getElementById('eventModal');
             const container = document.getElementById('modalContainer');
@@ -783,7 +795,11 @@
         function openModalForDateTime(dateStr, timeStr) {
             openModal();
             document.getElementById('eventDate').value = dateStr;
-            document.getElementById('eventTime').value = timeStr;
+            document.getElementById('eventTimeFrom').value = timeStr;
+            // auto calculate timeTo +1 hr
+            const [hr, min] = timeStr.split(':').map(Number);
+            const nextHr = String((hr + 1) % 24).padStart(2, '0');
+            document.getElementById('eventTimeTo').value = `${nextHr}:${String(min).padStart(2, '0')}`;
         }
 
         function closeModal() {
@@ -802,10 +818,11 @@
             const data = {
                 id: id || 'evt-' + Date.now(),
                 date: document.getElementById('eventDate').value,
-                time: document.getElementById('eventTime').value,
+                timeFrom: document.getElementById('eventTimeFrom').value,
+                timeTo: document.getElementById('eventTimeTo').value,
+                name: document.getElementById('eventCustomerName').value.trim(),
                 partNumber: document.getElementById('eventPartNumber').value.trim(),
                 status: document.getElementById('eventStatus').value,
-                name: document.getElementById('eventCustomerName').value.trim(),
                 address: document.getElementById('eventAddress').value.trim(),
                 mobile: document.getElementById('eventMobile').value.trim(),
                 remarks: document.getElementById('eventRemarks').value.trim()
@@ -832,10 +849,11 @@
             document.getElementById('modalTitle').innerText = 'Edit Schedule Entry';
             document.getElementById('eventId').value = evt.id;
             document.getElementById('eventDate').value = evt.date;
-            document.getElementById('eventTime').value = evt.time;
+            document.getElementById('eventTimeFrom').value = evt.timeFrom || evt.time || '09:00';
+            document.getElementById('eventTimeTo').value = evt.timeTo || '10:00';
+            document.getElementById('eventCustomerName').value = evt.name;
             document.getElementById('eventPartNumber').value = evt.partNumber;
             document.getElementById('eventStatus').value = evt.status;
-            document.getElementById('eventCustomerName').value = evt.name;
             document.getElementById('eventAddress').value = evt.address;
             document.getElementById('eventMobile').value = evt.mobile;
             document.getElementById('eventRemarks').value = evt.remarks || '';
@@ -868,10 +886,9 @@
             badge.innerText = evt.status;
             badge.className = `px-2.5 py-1 text-xs font-semibold rounded-full border ${getStatusBadgeClass(evt.status)}`;
 
-            document.getElementById('detailTimeBadge.innerText', `${evt.date} at ${evt.time}`);
-            document.getElementById('detailTimeBadge').innerText = `${evt.date} at ${evt.time}`;
-            document.getElementById('detailPartNumber').innerText = evt.partNumber;
+            document.getElementById('detailTimeBadge').innerText = `${evt.date} (${evt.timeFrom} - ${evt.timeTo})`;
             document.getElementById('detailName').innerText = evt.name;
+            document.getElementById('detailPartNumber').innerText = evt.partNumber;
             
             const mobileLink = document.getElementById('detailMobileLink');
             mobileLink.innerText = evt.mobile;
