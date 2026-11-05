@@ -1,260 +1,136 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TEKSHAWN CALENDAR</title>
-    <!-- Tailwind CSS -->
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome for icons -->
+    <!-- FontAwesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Inter Font -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; }
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-        @media print {
-            body * { visibility: hidden; }
-            #reportPrintArea, #reportPrintArea * { visibility: visible; }
-            #reportPrintArea { position: absolute; left: 0; top: 0; width: 100%; }
-        }
+        .fc-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); }
     </style>
 </head>
-<body class="h-full bg-slate-50 text-slate-800 flex flex-col overflow-hidden">
+<body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen flex flex-col">
 
-    <!-- Top Header Bar -->
-    <header class="bg-white border-b border-slate-200 px-4 py-2.5 flex items-center justify-between shrink-0 shadow-sm z-20">
-        <div class="flex items-center space-x-4">
-            <div class="flex items-center space-x-2">
-                <div class="bg-blue-600 text-white p-2 rounded-lg shadow-sm flex items-center justify-center">
-                    <i class="fa-solid fa-calendar-days text-lg"></i>
+    <!-- Header -->
+    <header class="bg-slate-900 text-white shadow-md">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="bg-blue-600 text-white p-2.5 rounded-xl shadow-lg">
+                    <i class="fa-solid fa-calendar-days text-xl"></i>
                 </div>
-                <h1 class="text-xl font-bold tracking-tight text-slate-900 hidden sm:block">TEKSHAWN<span class="text-blue-600">CALENDAR</span></h1>
+                <div>
+                    <h1 class="text-xl font-bold tracking-tight uppercase">TEKSHAWN CALENDAR</h1>
+                    <p class="text-xs text-slate-400">Operations & Schedule Management</p>
+                </div>
             </div>
             
-            <div class="flex items-center space-x-1 sm:space-x-2">
-                <button onclick="navigateToday()" class="px-3 py-1.5 text-sm font-medium border border-slate-300 rounded-md hover:bg-slate-50 transition text-slate-700 shadow-sm">Today</button>
-                <div class="flex items-center border border-slate-300 rounded-md overflow-hidden shadow-sm">
-                    <button onclick="navigateDate(-1)" class="px-2.5 py-1.5 hover:bg-slate-100 text-slate-600 transition"><i class="fa-solid fa-chevron-left text-xs"></i></button>
-                    <button onclick="navigateDate(1)" class="px-2.5 py-1.5 hover:bg-slate-100 text-slate-600 transition border-l border-slate-300"><i class="fa-solid fa-chevron-right text-xs"></i></button>
-                </div>
-                <span id="currentDateDisplay" class="text-base sm:text-lg font-semibold text-slate-800 min-w-[150px]">Month Year</span>
+            <div class="flex items-center gap-3 flex-wrap justify-center">
+                <button onclick="openReportModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-sm font-medium px-4 py-2 rounded-lg transition flex items-center gap-2 shadow-sm">
+                    <i class="fa-solid fa-file-excel text-emerald-400"></i> Reports & Export
+                </button>
+                <button onclick="openModal()" class="bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold px-4 py-2 rounded-lg transition flex items-center gap-2 shadow-sm">
+                    <i class="fa-solid fa-plus"></i> New Appointment
+                </button>
             </div>
-        </div>
-
-        <div class="flex items-center space-x-3">
-            <!-- Search Filter Input -->
-            <div class="relative hidden md:block">
-                <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
-                    <i class="fa-solid fa-search text-xs"></i>
-                </span>
-                <input type="text" id="searchInput" oninput="handleSearch(this.value)" placeholder="Search entries..." class="pl-9 pr-4 py-1.5 text-sm bg-slate-100 border border-transparent rounded-lg focus:outline-none focus:bg-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition w-48 lg:w-64">
-            </div>
-
-            <!-- View Switcher -->
-            <div class="bg-slate-100 p-1 rounded-lg flex space-x-1 border border-slate-200">
-                <button onclick="switchView('month')" id="btn-month" class="px-3 py-1 text-xs font-medium rounded-md transition bg-white text-blue-600 shadow-sm">Month</button>
-                <button onclick="switchView('week')" id="btn-week" class="px-3 py-1 text-xs font-medium rounded-md transition text-slate-600 hover:text-slate-900">Week</button>
-                <button onclick="switchView('day')" id="btn-day" class="px-3 py-1 text-xs font-medium rounded-md transition text-slate-600 hover:text-slate-900">Day</button>
-                <button onclick="switchView('list')" id="btn-list" class="px-3 py-1 text-xs font-medium rounded-md transition text-slate-600 hover:text-slate-900"><i class="fa-solid fa-list mr-1"></i>List</button>
-            </div>
-
-            <!-- Report Button -->
-            <button onclick="openReportModal()" class="bg-slate-800 hover:bg-slate-900 text-white font-medium px-3.5 py-1.5 rounded-lg text-sm shadow transition flex items-center space-x-1.5">
-                <i class="fa-solid fa-file-excel text-xs text-emerald-400"></i>
-                <span class="hidden lg:inline">Reports & Export</span>
-            </button>
-
-            <!-- New Event Button -->
-            <button onclick="openModal()" class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-1.5 rounded-lg text-sm shadow transition flex items-center space-x-1.5">
-                <i class="fa-solid fa-plus text-xs"></i>
-                <span class="hidden sm:inline">New Entry</span>
-            </button>
         </div>
     </header>
 
-    <!-- Main Workspace -->
-    <div class="flex-1 flex overflow-hidden relative">
-        
-        <!-- Sidebar: Mini Calendar & Filters -->
-        <aside class="w-64 bg-white border-r border-slate-200 p-4 hidden lg:flex flex-col shrink-0 space-y-6 overflow-y-auto">
-            <!-- Mini Calendar Widget -->
-            <div>
-                <div class="flex items-center justify-between mb-2">
-                    <span id="miniCalendarMonth" class="text-sm font-semibold text-slate-700">Month Year</span>
-                    <div class="flex space-x-1">
-                        <button onclick="navigateMiniCalendar(-1)" class="p-1 hover:bg-slate-100 rounded text-slate-500"><i class="fa-solid fa-chevron-left text-xs"></i></button>
-                        <button onclick="navigateMiniCalendar(1)" class="p-1 hover:bg-slate-100 rounded text-slate-500"><i class="fa-solid fa-chevron-right text-xs"></i></button>
-                    </div>
-                </div>
-                <div class="grid grid-cols-7 gap-1 text-center text-[11px] font-medium text-slate-400 mb-1">
-                    <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
-                </div>
-                <div id="miniCalendarDays" class="grid grid-cols-7 gap-1 text-center text-xs">
-                    <!-- Dynamic mini calendar days -->
-                </div>
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 py-6 flex-grow w-full">
+        <!-- Controls Bar -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 mb-6 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3 w-full md:w-auto justify-between md:justify-start">
+                <button onclick="changeDate(-1)" class="p-2 border border-slate-200 rounded-lg hover:bg-slate-100 text-slate-600 transition">
+                    <i class="fa-solid fa-chevron-left"></i>
+                </button>
+                <h2 id="currentDateLabel" class="text-lg font-bold text-slate-800 min-w-[200px] text-center"></h2>
+                <button onclick="changeDate(1)" class="p-2 border border-slate-200 rounded-lg hover:bg-slate-100 text-slate-600 transition">
+                    <i class="fa-solid fa-chevron-right"></i>
+                </button>
+                <button onclick="goToToday()" class="text-xs font-semibold uppercase tracking-wider text-blue-600 bg-blue-50 px-3 py-2 rounded-lg hover:bg-blue-100 transition">Today</button>
             </div>
 
-            <hr class="border-slate-100">
-
-            <!-- Status Filter -->
-            <div>
-                <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Filter by Status</h3>
-                <div class="space-y-2 text-sm">
-                    <label class="flex items-center space-x-2 cursor-pointer hover:bg-slate-50 p-1 rounded">
-                        <input type="checkbox" checked value="all" onchange="toggleFilter('all', this)" id="filter-all" class="rounded text-blue-600 focus:ring-blue-500 w-4 h-4">
-                        <span class="text-slate-700 font-medium">All Entries</span>
-                    </label>
-                    <label class="flex items-center space-x-2 cursor-pointer hover:bg-slate-50 p-1 rounded">
-                        <input type="checkbox" checked value="Pending" onchange="toggleFilterStatus('Pending')" class="status-filter rounded text-amber-500 focus:ring-amber-400 w-4 h-4">
-                        <span class="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></span>
-                        <span class="text-slate-600">Pending</span>
-                    </label>
-                    <label class="flex items-center space-x-2 cursor-pointer hover:bg-slate-50 p-1 rounded">
-                        <input type="checkbox" checked value="In Progress" onchange="toggleFilterStatus('In Progress')" class="status-filter rounded text-blue-500 focus:ring-blue-400 w-4 h-4">
-                        <span class="w-2.5 h-2.5 rounded-full bg-blue-500 inline-block"></span>
-                        <span class="text-slate-600">In Progress</span>
-                    </label>
-                    <label class="flex items-center space-x-2 cursor-pointer hover:bg-slate-50 p-1 rounded">
-                        <input type="checkbox" checked value="Completed" onchange="toggleFilterStatus('Completed')" class="status-filter rounded text-emerald-500 focus:ring-emerald-400 w-4 h-4">
-                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span>
-                        <span class="text-slate-600">Completed</span>
-                    </label>
-                    <label class="flex items-center space-x-2 cursor-pointer hover:bg-slate-50 p-1 rounded">
-                        <input type="checkbox" checked value="Cancelled" onchange="toggleFilterStatus('Cancelled')" class="status-filter rounded text-rose-500 focus:ring-rose-400 w-4 h-4">
-                        <span class="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block"></span>
-                        <span class="text-slate-600">Cancelled</span>
-                    </label>
+            <div class="flex items-center gap-3 w-full md:w-auto justify-end flex-wrap">
+                <!-- Search Filter -->
+                <div class="relative">
+                    <i class="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                    <input type="text" id="searchInput" oninput="renderApp()" placeholder="Search customer, part #..." class="pl-9 pr-4 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-48 sm:w-64">
+                </div>
+                
+                <!-- View Selector -->
+                <div class="flex bg-slate-100 p-1 rounded-lg border border-slate-200 text-sm font-medium">
+                    <button onclick="setView('month')" id="btn-month" class="px-3 py-1.5 rounded-md transition bg-white text-blue-600 shadow-sm">Month</button>
+                    <button onclick="setView('week')" id="btn-week" class="px-3 py-1.5 rounded-md transition text-slate-600 hover:text-slate-900">Week</button>
+                    <button onclick="setView('day')" id="btn-day" class="px-3 py-1.5 rounded-md transition text-slate-600 hover:text-slate-900">Day</button>
+                    <button onclick="setView('list')" id="btn-list" class="px-3 py-1.5 rounded-md transition text-slate-600 hover:text-slate-900">List</button>
                 </div>
             </div>
+        </div>
 
-            <!-- Quick Stats Summary -->
-            <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-2 mt-auto">
-                <h4 class="text-xs font-semibold text-slate-500 uppercase">Summary</h4>
-                <div class="flex justify-between text-xs"><span class="text-slate-600">Total Entries:</span> <span id="stat-total" class="font-semibold text-slate-900">0</span></div>
-                <div class="flex justify-between text-xs"><span class="text-slate-600">Pending:</span> <span id="stat-pending" class="font-semibold text-amber-600">0</span></div>
-                <div class="flex justify-between text-xs"><span class="text-slate-600">Completed:</span> <span id="stat-completed" class="font-semibold text-emerald-600">0</span></div>
-            </div>
-        </aside>
+        <!-- Calendar Container -->
+        <div id="calendarContainer" class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+            <!-- Dynamically Rendered Views -->
+        </div>
+    </main>
 
-        <!-- Main Content Grid / List Views -->
-        <main class="flex-1 flex flex-col overflow-hidden bg-white">
-            <!-- Month View Container -->
-            <div id="view-month-container" class="flex-1 flex flex-col h-full overflow-hidden">
-                <div class="grid grid-cols-7 border-b border-slate-200 text-center text-xs font-semibold text-slate-500 py-2 bg-slate-50 shrink-0">
-                    <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
-                </div>
-                <div id="monthGrid" class="flex-1 grid grid-cols-7 grid-rows-6 bg-slate-200 gap-px overflow-y-auto">
-                    <!-- Dynamic Month Cells -->
-                </div>
-            </div>
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-500">
+        TEKSHAWN CALENDAR &copy; 2026 &bull; Operations & Schedule Hub
+    </footer>
 
-            <!-- Week View Container -->
-            <div id="view-week-container" class="flex-1 flex flex-col h-full overflow-hidden hidden">
-                <div id="weekHeader" class="grid grid-cols-8 border-b border-slate-200 text-center text-xs font-semibold text-slate-500 py-2 bg-slate-50 shrink-0">
-                    <!-- Week column headers -->
-                </div>
-                <div id="weekGrid" class="flex-1 overflow-y-auto bg-slate-100 divide-y divide-slate-200">
-                    <!-- Time rows for week view -->
-                </div>
-            </div>
-
-            <!-- Day View Container -->
-            <div id="view-day-container" class="flex-1 flex flex-col h-full overflow-hidden hidden">
-                <div id="dayHeader" class="border-b border-slate-200 px-6 py-3 bg-slate-50 font-semibold text-slate-700 text-sm shrink-0">
-                    <!-- Day Header Title -->
-                </div>
-                <div id="dayGrid" class="flex-1 overflow-y-auto bg-slate-50 divide-y divide-slate-200">
-                    <!-- Hourly day schedule -->
-                </div>
-            </div>
-
-            <!-- List View Container -->
-            <div id="view-list-container" class="flex-1 flex flex-col h-full overflow-hidden hidden bg-white">
-                <div class="p-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
-                    <h2 class="font-semibold text-slate-700 text-sm">All Scheduled Entries</h2>
-                    <span id="listCountBadge" class="text-xs bg-blue-100 text-blue-700 font-medium px-2.5 py-0.5 rounded-full">0 entries</span>
-                </div>
-                <div class="flex-1 overflow-x-auto overflow-y-auto custom-scrollbar">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="bg-slate-100 border-b border-slate-200 text-xs font-semibold text-slate-600 uppercase tracking-wider sticky top-0 z-10">
-                                <th class="p-3">Date & Time</th>
-                                <th class="p-3">Customer Name</th>
-                                <th class="p-3">Part Number</th>
-                                <th class="p-3">Status</th>
-                                <th class="p-3">Source</th>
-                                <th class="p-3">Address</th>
-                                <th class="p-3">Mobile</th>
-                                <th class="p-3">Remarks</th>
-                                <th class="p-3 text-right">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="listTableBody" class="divide-y divide-slate-200 text-sm">
-                            <!-- Dynamic Table Rows -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </main>
-    </div>
-
-    <!-- Event Modal (Add / Edit) -->
-    <div id="eventModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-xl overflow-hidden transform transition-all scale-95 opacity-0 duration-200" id="modalContainer">
-            <div class="px-6 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
-                <h3 id="modalTitle" class="text-lg font-bold text-slate-800">New Schedule Entry</h3>
-                <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-200 transition"><i class="fa-solid fa-xmark"></i></button>
+    <!-- Add/Edit Appointment Modal -->
+    <div id="appointmentModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-slate-100">
+            <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                <h3 id="modalTitle" class="text-lg font-bold text-slate-800">New Appointment</h3>
+                <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 p-2 rounded-lg hover:bg-slate-100 transition"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
             
-            <form id="eventForm" onsubmit="saveEvent(event)" class="p-6 space-y-4 max-h-[80vh] overflow-y-auto custom-scrollbar">
-                <input type="hidden" id="eventId">
+            <form id="appointmentForm" onsubmit="saveAppointment(event)" class="p-6 space-y-4">
+                <input type="hidden" id="appointmentId">
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Customer Name *</label>
+                        <input type="text" id="custName" required class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g. Amanda Ives">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Part Number</label>
+                        <input type="text" id="partNumber" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g. QN207TAFKZA">
+                    </div>
+                </div>
 
-                <!-- Primary Field: Customer Name First -->
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Customer Name *</label>
-                    <input type="text" id="eventCustomerName" required placeholder="Client or Company Name" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Date *</label>
+                        <input type="date" id="apptDate" required class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Time From</label>
+                        <input type="time" id="timeFrom" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Time To</label>
+                        <input type="time" id="timeTo" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Date *</label>
-                        <input type="date" id="eventDate" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Status *</label>
-                        <select id="eventStatus" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white font-medium">
-                            <option value="Pending" class="text-amber-600">Pending</option>
-                            <option value="In Progress" class="text-blue-600">In Progress</option>
-                            <option value="Completed" class="text-emerald-600">Completed</option>
-                            <option value="Cancelled" class="text-rose-600">Cancelled</option>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Status</label>
+                        <select id="status" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                            <option value="Pending">Pending</option>
+                            <option value="Completed">Completed</option>
+                            <option value="In Progress">In Progress</option>
+                            <option value="Cancelled">Cancelled</option>
                         </select>
                     </div>
-                </div>
-
-                <!-- Time From and Time To -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Time From *</label>
-                        <input type="time" id="eventTimeFrom" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Time To *</label>
-                        <input type="time" id="eventTimeTo" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Part Number *</label>
-                        <input type="text" id="eventPartNumber" required placeholder="e.g. PN-9842-AX" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Source *</label>
-                        <select id="eventSource" onchange="handleSourceChange(this.value)" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Source</label>
+                        <select id="source" onchange="checkSourceOther()" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
                             <option value="WorkMarket">WorkMarket</option>
                             <option value="Thumbtack">Thumbtack</option>
                             <option value="Barrister">Barrister</option>
@@ -265,718 +141,521 @@
                     </div>
                 </div>
 
-                <!-- Specify Other Source Container -->
-                <div id="otherSourceContainer" class="hidden">
-                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Specify Source *</label>
-                    <input type="text" id="eventSourceOther" placeholder="Enter custom source name..." class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <div id="sourceOtherContainer" class="hidden">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Specify Other Source</label>
+                    <input type="text" id="sourceOther" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter source name">
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Mobile *</label>
-                        <input type="text" id="eventMobile" required placeholder="+1 (555) 019-2834" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Mobile</label>
+                        <input type="text" id="mobile" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g. (118) 774-6512">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Address *</label>
-                        <input type="text" id="eventAddress" required placeholder="Street address, City, State" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Address</label>
+                        <input type="text" id="address" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g. 5221 cartwright ave 91601">
                     </div>
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Remarks</label>
-                    <textarea id="eventRemarks" rows="3" placeholder="Additional notes or specifications..." class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"></textarea>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Remarks</label>
+                    <textarea id="remarks" rows="2" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Notes or special instructions..."></textarea>
                 </div>
 
-                <div class="flex items-center justify-end space-x-3 pt-4 border-t border-slate-200">
-                    <button type="button" onclick="closeModal()" class="px-4 py-2 border border-slate-300 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-50 transition">Cancel</button>
-                    <button type="submit" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium shadow transition">Save Entry</button>
+                <div class="flex justify-between items-center pt-4 border-t border-slate-100">
+                    <button type="button" id="deleteBtn" onclick="deleteCurrentAppointment()" class="hidden text-rose-600 hover:text-rose-700 text-sm font-semibold flex items-center gap-1.5 px-3 py-2 rounded-lg hover:bg-rose-50 transition">
+                        <i class="fa-solid fa-trash"></i> Delete
+                    </button>
+                    <div class="flex items-center gap-3 ml-auto">
+                        <button type="button" onclick="closeModal()" class="px-4 py-2 border border-slate-200 rounded-lg text-sm font-semibold text-slate-600 hover:bg-slate-100 transition">Cancel</button>
+                        <button type="submit" class="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm font-semibold shadow-sm transition">Save Appointment</button>
+                    </div>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- Entry Detail View Modal -->
-    <div id="detailModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all" id="detailModalContainer">
-            <div class="px-6 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
-                <div class="flex items-center space-x-2">
-                    <span id="detailStatusBadge" class="px-2.5 py-1 text-xs font-semibold rounded-full">Status</span>
-                    <span id="detailTimeBadge" class="text-xs text-slate-500 font-medium">Time</span>
-                </div>
-                <button onclick="closeDetailModal()" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-200 transition"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <div class="p-6 space-y-4">
-                <div>
-                    <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">Customer Name</span>
-                    <p id="detailName" class="text-lg font-bold text-slate-900">Name Here</p>
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">Part Number</span>
-                        <p id="detailPartNumber" class="text-sm font-bold text-blue-600 font-mono">PN-0000</p>
-                    </div>
-                    <div>
-                        <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">Source</span>
-                        <p id="detailSource" class="text-sm font-semibold text-slate-700">WhatsApp</p>
-                    </div>
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">Mobile</span>
-                        <p id="detailMobile" class="text-sm font-medium text-slate-800"><a href="#" id="detailMobileLink" class="text-blue-600 hover:underline">Phone</a></p>
-                    </div>
-                    <div>
-                        <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">Address</span>
-                        <p id="detailAddressText" class="text-sm text-slate-700">Address Here</p>
-                    </div>
-                </div>
-                <div>
-                    <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">Remarks / Notes</span>
-                    <p id="detailRemarks" class="text-sm text-slate-600 bg-slate-50 p-3 rounded-lg border border-slate-200 mt-0.5 min-h-[50px] whitespace-pre-wrap">None</p>
-                </div>
-                <div class="flex items-center justify-between pt-4 border-t border-slate-200">
-                    <button onclick="deleteCurrentDetail()" class="text-rose-600 hover:text-rose-700 text-sm font-medium flex items-center space-x-1.5 px-3 py-1.5 rounded-lg hover:bg-rose-50 transition">
-                        <i class="fa-solid fa-trash-can text-xs"></i>
-                        <span>Delete</span>
-                    </button>
-                    <button onclick="editCurrentDetail()" class="bg-slate-800 hover:bg-slate-900 text-white text-sm font-medium px-4 py-1.5 rounded-lg shadow transition flex items-center space-x-1.5">
-                        <i class="fa-solid fa-pen text-xs"></i>
-                        <span>Edit Entry</span>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Reports & Export Center Modal -->
-    <div id="reportModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl overflow-hidden flex flex-col max-h-[90vh]">
-            <div class="px-6 py-4 bg-slate-800 text-white flex items-center justify-between shrink-0">
-                <div class="flex items-center space-x-2">
-                    <i class="fa-solid fa-file-excel text-emerald-400 text-lg"></i>
-                    <h3 class="font-bold text-base">TEKSHAWN Reports & Export Center</h3>
-                </div>
-                <button onclick="closeReportModal()" class="text-slate-300 hover:text-white p-1.5 rounded-lg transition"><i class="fa-solid fa-xmark"></i></button>
+    <!-- Reports & Export Modal -->
+    <div id="reportModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto border border-slate-100 flex flex-col">
+            <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                    <i class="fa-solid fa-file-excel text-emerald-600"></i> Reports & Export Center
+                </h3>
+                <button onclick="closeReportModal()" class="text-slate-400 hover:text-slate-600 p-2 rounded-lg hover:bg-slate-100 transition"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
             
-            <div class="p-6 bg-slate-50 border-b border-slate-200 grid grid-cols-1 md:grid-cols-4 gap-4 shrink-0">
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Report Filter Type</label>
-                    <select id="reportType" onchange="toggleReportType()" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white font-medium focus:ring-2 focus:ring-blue-500">
-                        <option value="month">Month View</option>
-                        <option value="week">Current Week</option>
-                        <option value="custom">Custom Date Range</option>
-                    </select>
-                </div>
-                <div id="reportMonthContainer">
-                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Select Month</label>
-                    <input type="month" id="reportMonthInput" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500">
-                </div>
-                <div id="reportDateFromContainer" class="hidden">
-                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">From Date</label>
-                    <input type="date" id="reportDateFrom" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500">
-                </div>
-                <div id="reportDateToContainer" class="hidden">
-                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">To Date</label>
-                    <input type="date" id="reportDateTo" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500">
-                </div>
-                <div class="flex items-end">
-                    <button onclick="generateReportData()" class="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg text-sm shadow transition flex items-center justify-center space-x-1.5">
-                        <i class="fa-solid fa-filter text-xs"></i>
-                        <span>Generate Report</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Report Results View area -->
-            <div id="reportPrintArea" class="flex-1 overflow-y-auto p-6 bg-white custom-scrollbar space-y-4">
-                <div class="flex justify-between items-center border-b pb-4">
+            <div class="p-6 space-y-6 flex-grow">
+                <!-- Filter Controls -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
                     <div>
-                        <h4 id="reportTitleText" class="text-lg font-bold text-slate-900">Schedule Activity Report</h4>
-                        <p id="reportSubText" class="text-xs text-slate-500">Generated on demand</p>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Report Period Type</label>
+                        <select id="reportType" onchange="toggleReportPeriod()" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg bg-white focus:ring-2 focus:ring-blue-500">
+                            <option value="month">By Month</option>
+                            <option value="week">By Week</option>
+                            <option value="custom">Custom Date Range</option>
+                        </select>
                     </div>
-                    <div id="reportBadgeStats" class="flex space-x-2 text-xs">
-                        <!-- Stats badges -->
+
+                    <div id="reportMonthContainer">
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Select Month</label>
+                        <input type="month" id="reportMonthInput" onchange="generateReportPreview()" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg bg-white focus:ring-2 focus:ring-blue-500">
+                    </div>
+
+                    <div id="reportWeekContainer" class="hidden">
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Select Week Starting</label>
+                        <input type="date" id="reportWeekInput" onchange="generateReportPreview()" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg bg-white focus:ring-2 focus:ring-blue-500">
+                    </div>
+
+                    <div id="reportCustomContainer" class="hidden sm:col-span-2 grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">From Date</label>
+                            <input type="date" id="reportDateFrom" onchange="generateReportPreview()" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg bg-white focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">To Date</label>
+                            <input type="date" id="reportDateTo" onchange="generateReportPreview()" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg bg-white focus:ring-2 focus:ring-blue-500">
+                        </div>
                     </div>
                 </div>
 
-                <div class="overflow-x-auto">
+                <!-- Summary Stats -->
+                <div id="reportStats" class="flex gap-4 text-sm font-medium text-slate-600">
+                    <!-- Populated dynamically -->
+                </div>
+
+                <!-- Preview Table -->
+                <div class="border border-slate-200 rounded-xl overflow-hidden max-h-64 overflow-y-auto">
                     <table class="w-full text-left border-collapse text-xs">
-                        <thead>
-                            <tr class="bg-slate-100 border-b border-slate-200 text-slate-600 uppercase font-semibold">
-                                <th class="p-2.5">Date & Time</th>
-                                <th class="p-2.5">Customer Name</th>
-                                <th class="p-2.5">Part Number</th>
-                                <th class="p-2.5">Status</th>
-                                <th class="p-2.5">Source</th>
-                                <th class="p-2.5">Mobile</th>
-                                <th class="p-2.5">Address</th>
-                                <th class="p-2.5">Remarks</th>
+                        <thead class="bg-slate-100 text-slate-700 sticky top-0">
+                            <tr>
+                                <th class="p-3 font-bold">Date & Time</th>
+                                <th class="p-3 font-bold">Customer Name</th>
+                                <th class="p-3 font-bold">Part Number</th>
+                                <th class="p-3 font-bold">Status</th>
+                                <th class="p-3 font-bold">Source</th>
+                                <th class="p-3 font-bold">Mobile</th>
+                                <th class="p-3 font-bold">Address</th>
+                                <th class="p-3 font-bold">Remarks</th>
                             </tr>
                         </thead>
-                        <tbody id="reportTableBody" class="divide-y divide-slate-200">
-                            <!-- Report rows -->
+                        <tbody id="reportTableBody" class="divide-y divide-slate-100 bg-white">
+                            <!-- Rows -->
                         </tbody>
                     </table>
                 </div>
             </div>
 
-            <!-- Report Footer Actions -->
-            <div class="px-6 py-4 bg-slate-50 border-t border-slate-200 flex justify-between items-center shrink-0">
-                <span id="reportCountLabel" class="text-xs font-semibold text-slate-600">0 records found</span>
-                <div class="flex space-x-3">
-                    <button onclick="printReport()" class="px-4 py-2 border border-slate-300 hover:bg-slate-100 text-slate-700 rounded-lg text-sm font-medium transition flex items-center space-x-1.5">
-                        <i class="fa-solid fa-print text-xs"></i>
-                        <span>Print / PDF</span>
+            <div class="px-6 py-4 border-t border-slate-100 bg-slate-50/50 flex justify-between items-center">
+                <button onclick="closeReportModal()" class="px-4 py-2 border border-slate-200 rounded-lg text-sm font-semibold text-slate-600 hover:bg-slate-100 transition">Close</button>
+                <div class="flex items-center gap-3">
+                    <button onclick="exportReportExcel()" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-sm font-semibold shadow-sm transition flex items-center gap-2">
+                        <i class="fa-solid fa-file-excel"></i> Export Excel / CSV
                     </button>
-                    <button onclick="exportReportCSV()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-medium shadow transition flex items-center space-x-1.5">
-                        <i class="fa-solid fa-file-excel text-xs"></i>
-                        <span>Export Excel (.csv)</span>
+                    <button onclick="printReport()" class="px-5 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-sm font-semibold shadow-sm transition flex items-center gap-2">
+                        <i class="fa-solid fa-print"></i> Print / PDF Summary
                     </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Toast Notification Box -->
-    <div id="toast" class="fixed bottom-5 right-5 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-2xl z-50 transform translate-y-20 opacity-0 transition-all duration-300 flex items-center space-x-2 text-sm font-medium">
-        <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400"></i>
-        <span id="toastMessage">Success notification message</span>
-    </div>
-
     <!-- Application Script -->
     <script>
-        // Sample Initial Data if localStorage is empty
-        const defaultEvents = [
+        // Initial sample data seed matching user's PDF
+        const defaultAppointments = [
             {
-                id: 'evt-101',
-                date: new Date().toISOString().split('T')[0],
-                timeFrom: '09:30',
-                timeTo: '11:00',
-                name: 'Acme Logistics Corp',
-                partNumber: 'PN-CHIP-408',
-                status: 'Pending',
-                source: 'Google',
-                address: '104 Industrial Pkwy, Sector 4, Metro City',
-                mobile: '+1 (555) 382-9100',
-                remarks: 'Handle with extreme care. Fragile electronic module.'
+                id: "rec_1",
+                custName: "LACN-CORPORATE",
+                partNumber: "N/A",
+                apptDate: "2026-11-02",
+                timeFrom: "13:28",
+                timeTo: "13:55",
+                status: "Completed",
+                source: "WorkMarket",
+                mobile: "N/A",
+                address: "541 W Colorado St #205 Glendale, CA",
+                remarks: "Replace Nucleus Lock Tumbler Door 5 (2276064413)"
             },
             {
-                id: 'evt-102',
-                date: new Date().toISOString().split('T')[0],
-                timeFrom: '14:00',
-                timeTo: '16:30',
-                name: 'Apex Manufacturing',
-                partNumber: 'PN-VALVE-88X',
-                status: 'In Progress',
-                source: 'Thumbtack',
-                address: '782 Titanium Ave, Bay Area, CA',
-                mobile: '+1 (555) 921-4820',
-                remarks: 'Call 30 minutes prior to arrival at loading dock #4.'
+                id: "rec_2",
+                custName: "Amanda Ives",
+                partNumber: "QN207TAFKZA (Version F001)",
+                apptDate: "2026-11-04",
+                timeFrom: "09:00",
+                timeTo: "10:00",
+                status: "Pending",
+                source: "Thumbtack",
+                mobile: "(118) 774-6512",
+                address: "5221 cartwright ave 91601",
+                remarks: "waiting for parts parts link sent"
+            },
+            {
+                id: "rec_3",
+                custName: "Andrew Saldibar",
+                partNumber: "Samsung 2005FXZA",
+                apptDate: "2026-11-04",
+                timeFrom: "12:00",
+                timeTo: "15:00",
+                status: "Completed",
+                source: "Thumbtack",
+                mobile: "(11)858-1995",
+                address: "84-48 truston ave 90045 LA",
+                remarks: "parts link sent"
+            },
+            {
+                id: "rec_4",
+                custName: "Mostafa Hedayat",
+                partNumber: "Sony E-55883",
+                apptDate: "2026-11-05",
+                timeFrom: "12:00",
+                timeTo: "15:00",
+                status: "Completed",
+                source: "WorkMarket",
+                mobile: "(296) 369-4425",
+                address: "1149 shady ridge id moorpark 93021",
+                remarks: ""
+            },
+            {
+                id: "rec_5",
+                custName: "#449714",
+                partNumber: "N55579",
+                apptDate: "2026-11-05",
+                timeFrom: "13:00",
+                timeTo: "16:00",
+                status: "Completed",
+                source: "Other",
+                sourceOther: "Keyma",
+                mobile: "N/A",
+                address: "Ralphs #723 101 W Los Angeles Ave Moorpark, CA, 93021",
+                remarks: ""
             }
         ];
 
-        // State Management
-        let events = JSON.parse(localStorage.getItem('tekshawn_calendar_events')) || defaultEvents;
+        let appointments = JSON.parse(localStorage.getItem('tekshawn_appointments')) || defaultAppointments;
+        let currentView = 'month';
         let currentDate = new Date();
-        let miniCalendarDate = new Date();
-        let currentView = 'month'; // month, week, day, list
-        let activeFilters = {
-            'Pending': true,
-            'In Progress': true,
-            'Completed': true,
-            'Cancelled': true
-        };
-        let searchQuery = '';
-        let activeDetailId = null;
-
-        // Initialize App on Load
-        window.addEventListener('DOMContentLoaded', () => {
-            events.forEach(e => {
-                if (!e.timeFrom && e.time) {
-                    e.timeFrom = e.time;
-                    e.timeTo = e.time;
-                }
-                if (!e.source) e.source = 'Google';
-            });
-            renderApp();
-        });
 
         function saveToStorage() {
-            localStorage.setItem('tekshawn_calendar_events', JSON.stringify(events));
-            updateStats();
-        }
-
-        function renderApp() {
-            updateHeaderDate();
-            renderMiniCalendar();
-            updateStats();
-
-            // Hide/Show containers based on currentView
-            document.getElementById('view-month-container').classList.toggle('hidden', currentView !== 'month');
-            document.getElementById('view-week-container').classList.toggle('hidden', currentView !== 'week');
-            document.getElementById('view-day-container').classList.toggle('hidden', currentView !== 'day');
-            document.getElementById('view-list-container').classList.toggle('hidden', currentView !== 'list');
-
-            ['month', 'week', 'day', 'list'].forEach(v => {
-                const btn = document.getElementById(`btn-${v}`);
-                if (v === currentView) {
-                    btn.className = "px-3 py-1 text-xs font-medium rounded-md transition bg-white text-blue-600 shadow-sm";
-                } else {
-                    btn.className = "px-3 py-1 text-xs font-medium rounded-md transition text-slate-600 hover:text-slate-900";
-                }
-            });
-
-            if (currentView === 'month') renderMonthView();
-            else if (currentView === 'week') renderWeekView();
-            else if (currentView === 'day') renderDayView();
-            else if (currentView === 'list') renderListView();
+            localStorage.setItem('tekshawn_appointments', JSON.stringify(appointments));
         }
 
         // Navigation
-        function navigateDate(direction) {
+        function changeDate(dir) {
             if (currentView === 'month') {
-                currentDate.setMonth(currentDate.getMonth() + direction);
+                currentDate.setMonth(currentDate.getMonth() + dir);
             } else if (currentView === 'week') {
-                currentDate.setDate(currentDate.getDate() + (direction * 7));
-            } else if (currentView === 'day') {
-                currentDate.setDate(currentDate.getDate() + direction);
-            } else if (currentView === 'list') {
-                currentDate.setMonth(currentDate.getMonth() + direction);
+                currentDate.setDate(currentDate.getDate() + (dir * 7));
+            } else if (currentView === 'day' || currentView === 'list') {
+                currentDate.setDate(currentDate.getDate() + dir);
             }
             renderApp();
         }
 
-        function navigateToday() {
+        function goToToday() {
             currentDate = new Date();
-            miniCalendarDate = new Date();
             renderApp();
         }
 
-        function switchView(view) {
+        function setView(view) {
             currentView = view;
+            document.querySelectorAll('[id^="btn-"]').forEach(btn => {
+                btn.className = "px-3 py-1.5 rounded-md transition text-slate-600 hover:text-slate-900";
+            });
+            document.getElementById(`btn-${view}`).className = "px-3 py-1.5 rounded-md transition bg-white text-blue-600 shadow-sm";
             renderApp();
         }
 
-        function updateHeaderDate() {
-            const options = { month: 'long', year: 'numeric' };
-            if (currentView === 'day') {
-                document.getElementById('currentDateDisplay').innerText = currentDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        function renderApp() {
+            updateHeaderLabel();
+            const container = document.getElementById('calendarContainer');
+            const searchQuery = document.getElementById('searchInput').value.toLowerCase();
+            
+            const filtered = appointments.filter(app => {
+                const textMatch = (app.custName && app.custName.toLowerCase().includes(searchQuery)) ||
+                                  (app.partNumber && app.partNumber.toLowerCase().includes(searchQuery)) ||
+                                  (app.address && app.address.toLowerCase().includes(searchQuery)) ||
+                                  (app.source && app.source.toLowerCase().includes(searchQuery));
+                return textMatch;
+            });
+
+            if (currentView === 'month') {
+                renderMonthView(container, filtered);
             } else if (currentView === 'week') {
-                const startOfWeek = new Date(currentDate);
-                startOfWeek.setDate(currentDate.getDate() - currentDate.getDay());
-                const endOfWeek = new Date(startOfWeek);
-                endOfWeek.setDate(startOfWeek.getDate() + 6);
-                document.getElementById('currentDateDisplay').innerText = `${startOfWeek.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${endOfWeek.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+                renderWeekView(container, filtered);
+            } else if (currentView === 'day') {
+                renderDayView(container, filtered);
+            } else if (currentView === 'list') {
+                renderListView(container, filtered);
+            }
+        }
+
+        function updateHeaderLabel() {
+            const label = document.getElementById('currentDateLabel');
+            const options = { month: 'long', year: 'numeric' };
+            if (currentView === 'month') {
+                label.innerText = currentDate.toLocaleDateString('en-US', options);
+            } else if (currentView === 'week') {
+                const start = new Date(currentDate);
+                start.setDate(start.getDate() - start.getDay());
+                const end = new Date(start);
+                end.setDate(end.getDate() + 6);
+                label.innerText = `${start.toLocaleDateString('en-US', {month:'short', day:'numeric'})} - ${end.toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'})}`;
             } else {
-                document.getElementById('currentDateDisplay').innerText = currentDate.toLocaleDateString('en-US', options);
+                label.innerText = currentDate.toLocaleDateString('en-US', {weekday:'short', month:'short', day:'numeric', year:'numeric'});
             }
         }
 
-        // Status Badge Color Helper
-        function getStatusBadgeClass(status) {
-            switch(status) {
-                case 'Pending': return 'bg-amber-100 text-amber-800 border-amber-200';
-                case 'In Progress': return 'bg-blue-100 text-blue-800 border-blue-200';
-                case 'Completed': return 'bg-emerald-100 text-emerald-800 border-emerald-200';
-                case 'Cancelled': return 'bg-rose-100 text-rose-800 border-rose-200';
-                default: return 'bg-slate-100 text-slate-800 border-slate-200';
-            }
-        }
-
-        function getStatusDot(status) {
-            switch(status) {
-                case 'Pending': return 'bg-amber-500';
-                case 'In Progress': return 'bg-blue-500';
-                case 'Completed': return 'bg-emerald-500';
-                case 'Cancelled': return 'bg-rose-500';
-                default: return 'bg-slate-400';
-            }
-        }
-
-        function eventPassesFilters(evt) {
-            if (!activeFilters[evt.status]) return false;
-            if (searchQuery) {
-                const q = searchQuery.toLowerCase();
-                const matchStr = `${evt.name} ${evt.partNumber} ${evt.address} ${evt.mobile} ${evt.source} ${evt.remarks}`.toLowerCase();
-                if (!matchStr.includes(q)) return false;
-            }
-            return true;
-        }
-
-        function handleSourceChange(val) {
-            const otherContainer = document.getElementById('otherSourceContainer');
-            if (val === 'Other') {
-                otherContainer.classList.remove('hidden');
-                document.getElementById('eventSourceOther').setAttribute('required', 'true');
-            } else {
-                otherContainer.classList.add('hidden');
-                document.getElementById('eventSourceOther').removeAttribute('required');
-                document.getElementById('eventSourceOther').value = '';
-            }
-        }
-
-        // 1. MONTH VIEW
-        function renderMonthView() {
-            const grid = document.getElementById('monthGrid');
-            grid.innerHTML = '';
-
+        // Render Month Grid
+        function renderMonthView(container, items) {
             const year = currentDate.getFullYear();
             const month = currentDate.getMonth();
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const startingDayOfWeek = firstDay.getDay();
+            const totalDays = lastDay.getDate();
 
-            const firstDayIndex = new Date(year, month, 1).getDay();
-            const lastDayDate = new Date(year, month + 1, 0).getDate();
-            const prevLastDayDate = new Date(year, month, 0).getDate();
-            const todayStr = new Date().toISOString().split('T')[0];
+            let html = `<div class="fc-grid bg-slate-200 gap-px text-xs font-bold text-slate-600 text-center py-2 bg-slate-100 border-b border-slate-200">
+                <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+            </div>`;
 
-            let cellsHTML = '';
-            for (let i = firstDayIndex - 1; i >= 0; i--) {
-                const dayNum = prevLastDayDate - i;
-                const prevMonth = month === 0 ? 11 : month - 1;
-                const prevYear = month === 0 ? year - 1 : year;
-                const dateStr = `${prevYear}-${String(prevMonth + 1).padStart(2, '0')}-${String(dayNum).padStart(2, '0')}`;
-                cellsHTML += renderMonthCell(dayNum, dateStr, true, false);
+            html += `<div class="fc-grid bg-slate-200 gap-px auto-rows-fr bg-slate-200">`;
+
+            // Blank slots for previous month
+            for (let i = 0; i < startingDayOfWeek; i++) {
+                html += `<div class="bg-slate-50/50 min-h-[110px] p-2 text-slate-300"></div>`;
             }
 
-            for (let i = 1; i <= lastDayDate; i++) {
-                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
-                const isToday = (dateStr === todayStr);
-                cellsHTML += renderMonthCell(i, dateStr, false, isToday);
-            }
+            for (let day = 1; day <= totalDays; day++) {
+                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const dayItems = items.filter(i => i.apptDate === dateStr);
+                const isToday = new Date().toISOString().split('T')[0] === dateStr;
 
-            const totalCellsSoFar = firstDayIndex + lastDayDate;
-            const remainingCells = totalCellsSoFar <= 35 ? 35 - totalCellsSoFar : 42 - totalCellsSoFar;
-            for (let i = 1; i <= remainingCells; i++) {
-                const nextMonth = month === 11 ? 0 : month + 1;
-                const nextYear = month === 11 ? year + 1 : year;
-                const dateStr = `${nextYear}-${String(nextMonth + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
-                cellsHTML += renderMonthCell(i, dateStr, true, false);
-            }
-
-            grid.innerHTML = cellsHTML;
-        }
-
-        function renderMonthCell(dayNum, dateStr, isMuted, isToday) {
-            const dayEvents = events.filter(e => e.date === dateStr && eventPassesFilters(e));
-            dayEvents.sort((a,b) => (a.timeFrom || '').localeCompare(b.timeFrom || ''));
-
-            let eventsHTML = '';
-            dayEvents.forEach(evt => {
-                const timeStr = evt.timeFrom ? `${evt.timeFrom}${evt.timeTo ? '-' + evt.timeTo : ''}` : '';
-                eventsHTML += `
-                    <div onclick="event.stopPropagation(); showDetailModal('${evt.id}')" class="px-2 py-1 mb-1 rounded text-xs font-medium truncate flex items-center space-x-1.5 cursor-pointer shadow-sm hover:opacity-95 transition bg-white border border-slate-200/80">
-                        <span class="w-2 h-2 rounded-full shrink-0 ${getStatusDot(evt.status)}"></span>
-                        <span class="font-bold text-slate-800 truncate">${evt.name}</span>
-                        ${timeStr ? `<span class="text-[10px] text-slate-400 shrink-0">(${timeStr})</span>` : ''}
+                html += `<div class="bg-white min-h-[110px] p-2 flex flex-col hover:bg-slate-50 transition overflow-hidden">
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="text-xs font-semibold ${isToday ? 'bg-blue-600 text-white w-6 h-6 rounded-full flex items-center justify-center' : 'text-slate-700'}">${day}</span>
+                        <button onclick="openModalForDate('${dateStr}')" class="text-slate-400 hover:text-blue-600 text-xs"><i class="fa-solid fa-plus"></i></button>
                     </div>
-                `;
-            });
+                    <div class="space-y-1 overflow-y-auto max-h-[90px] flex-grow">`;
 
-            return `
-                <div onclick="openModalForDate('${dateStr}')" class="bg-white p-2 flex flex-col h-full min-h-[110px] cursor-pointer hover:bg-slate-50/80 transition group overflow-hidden">
-                    <div class="flex items-center justify-between mb-1">
-                        <span class="text-xs font-semibold ${isToday ? 'bg-blue-600 text-white w-6 h-6 rounded-full flex items-center justify-center shadow-sm' : (isMuted ? 'text-slate-300' : 'text-slate-700')}">
-                            ${dayNum}
-                        </span>
-                        <button class="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-blue-600 text-xs"><i class="fa-solid fa-plus"></i></button>
-                    </div>
-                    <div class="flex-1 overflow-y-auto custom-scrollbar space-y-1">
-                        ${eventsHTML}
-                    </div>
-                </div>
-            `;
-        }
-
-        // 2. WEEK VIEW
-        function renderWeekView() {
-            const header = document.getElementById('weekHeader');
-            const grid = document.getElementById('weekGrid');
-            header.innerHTML = '';
-            grid.innerHTML = '';
-
-            const startOfWeek = new Date(currentDate);
-            startOfWeek.setDate(currentDate.getDate() - currentDate.getDay());
-
-            let headerHTML = `<div class="p-2 text-[11px] font-bold text-slate-400 text-center uppercase">Time</div>`;
-            const weekDays = [];
-            for (let i = 0; i < 7; i++) {
-                const d = new Date(startOfWeek);
-                d.setDate(startOfWeek.getDate() + i);
-                const dateStr = d.toISOString().split('T')[0];
-                weekDays.push(dateStr);
-                const isToday = dateStr === new Date().toISOString().split('T')[0];
-                headerHTML += `
-                    <div class="p-2 text-center">
-                        <span class="text-[11px] font-bold uppercase text-slate-400 block">${d.toLocaleDateString('en-US', { weekday: 'short' })}</span>
-                        <span class="text-sm font-bold ${isToday ? 'bg-blue-600 text-white rounded-full w-7 h-7 inline-flex items-center justify-center' : 'text-slate-800'}">${d.getDate()}</span>
-                    </div>
-                `;
-            }
-            header.innerHTML = headerHTML;
-
-            let bodyHTML = '';
-            for (let hour = 8; hour <= 18; hour++) {
-                const timeLabel = `${String(hour).padStart(2, '0')}:00`;
-                bodyHTML += `<div class="grid grid-cols-8 min-h-[70px] border-b border-slate-200">`;
-                bodyHTML += `<div class="p-2 text-xs font-medium text-slate-400 text-right pr-4 border-r border-slate-200 bg-slate-50">${timeLabel}</div>`;
-
-                weekDays.forEach(dateStr => {
-                    const matchedEvents = events.filter(e => e.date === dateStr && (e.timeFrom || '').startsWith(String(hour).padStart(2, '0')) && eventPassesFilters(e));
-                    let cellEventsHTML = '';
-                    matchedEvents.forEach(evt => {
-                        cellEventsHTML += `
-                            <div onclick="event.stopPropagation(); showDetailModal('${evt.id}')" class="p-1.5 mb-1 rounded bg-white border border-slate-200 shadow-sm cursor-pointer hover:border-blue-300 transition text-xs">
-                                <div class="flex items-center space-x-1 font-semibold text-slate-800 truncate">
-                                    <span class="w-2 h-2 rounded-full ${getStatusDot(evt.status)} shrink-0"></span>
-                                    <span class="truncate">${evt.name}</span>
-                                </div>
-                                <div class="text-[10px] text-slate-400 font-mono mt-0.5">${evt.timeFrom} - ${evt.timeTo || ''}</div>
-                            </div>
-                        `;
-                    });
-
-                    bodyHTML += `
-                        <div onclick="openModalForDateTime('${dateStr}', '${timeLabel}')" class="p-1 border-r border-slate-100 hover:bg-slate-50 cursor-pointer transition">
-                            ${cellEventsHTML}
-                        </div>
-                    `;
-                });
-                bodyHTML += `</div>`;
-            }
-            grid.innerHTML = bodyHTML;
-        }
-
-        // 3. DAY VIEW
-        function renderDayView() {
-            const header = document.getElementById('dayHeader');
-            const grid = document.getElementById('dayGrid');
-            header.innerHTML = '';
-            grid.innerHTML = '';
-
-            const dateStr = currentDate.toISOString().split('T')[0];
-            header.innerHTML = `<h2 class="text-base font-bold text-slate-800">${currentDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}</h2>`;
-
-            let bodyHTML = '';
-            for (let hour = 7; hour <= 20; hour++) {
-                const timeLabel = `${String(hour).padStart(2, '0')}:00`;
-                const matchedEvents = events.filter(e => e.date === dateStr && (e.timeFrom || '').startsWith(String(hour).padStart(2, '0')) && eventPassesFilters(e));
-
-                let eventsHTML = '';
-                matchedEvents.forEach(evt => {
-                    eventsHTML += `
-                        <div onclick="showDetailModal('${evt.id}')" class="bg-white border border-slate-200 p-4 rounded-xl shadow-sm hover:shadow-md transition cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-2">
-                            <div class="space-y-1">
-                                <div class="flex items-center space-x-2">
-                                    <span class="px-2.5 py-0.5 text-xs font-semibold rounded-full border ${getStatusBadgeClass(evt.status)}">${evt.status}</span>
-                                    <span class="text-xs text-slate-500 font-medium"><i class="fa-regular fa-clock mr-1"></i>${evt.timeFrom} - ${evt.timeTo}</span>
-                                    <span class="font-mono font-semibold text-blue-600 text-xs bg-blue-50 px-2 py-0.5 rounded">${evt.partNumber}</span>
-                                    <span class="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-medium">${evt.source || 'WhatsApp'}</span>
-                                </div>
-                                <div class="font-bold text-slate-900 text-base">${evt.name}</div>
-                                <div class="text-xs text-slate-600 flex items-center space-x-1"><i class="fa-solid fa-location-dot text-rose-500"></i><span>${evt.address}</span></div>
-                            </div>
-                            <div class="flex items-center space-x-4 border-t sm:border-t-0 pt-2 sm:pt-0">
-                                <div class="text-xs text-slate-600"><i class="fa-solid fa-phone text-emerald-500 mr-1"></i>${evt.mobile}</div>
-                            </div>
-                        </div>
-                    `;
+                dayItems.forEach(item => {
+                    const statusColor = item.status === 'Completed' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+                                        item.status === 'In Progress' ? 'bg-amber-50 text-amber-700 border-amber-200' :
+                                        item.status === 'Cancelled' ? 'bg-rose-50 text-rose-700 border-rose-200' : 'bg-blue-50 text-blue-700 border-blue-200';
+                    const srcLabel = item.source === 'Other' && item.sourceOther ? item.sourceOther : item.source;
+                    html += `<div onclick="openModalForEdit('${item.id}')" class="text-[11px] p-1.5 rounded border ${statusColor} cursor-pointer truncate shadow-sm hover:shadow transition">
+                        <div class="font-bold truncate">${item.custName}</div>
+                        <div class="text-[10px] opacity-80 flex justify-between"><span>${item.timeFrom || ''}</span><span class="font-semibold">${srcLabel || ''}</span></div>
+                    </div>`;
                 });
 
-                bodyHTML += `
-                    <div class="flex p-4 border-b border-slate-200 group hover:bg-slate-100/50 transition">
-                        <div class="w-24 shrink-0 text-xs font-bold text-slate-400 pt-2">${timeLabel}</div>
-                        <div class="flex-1 min-h-[60px] cursor-pointer" onclick="openModalForDateTime('${dateStr}', '${timeLabel}')">
-                            ${eventsHTML || '<span class="text-xs text-slate-300 italic group-hover:text-slate-400">Click to schedule entry...</span>'}
-                        </div>
-                    </div>
-                `;
-            }
-            grid.innerHTML = bodyHTML;
-        }
-
-        // 4. LIST VIEW
-        function renderListView() {
-            const tbody = document.getElementById('listTableBody');
-            tbody.innerHTML = '';
-
-            const filtered = events.filter(eventPassesFilters);
-            filtered.sort((a,b) => `${a.date} ${a.timeFrom || ''}`.localeCompare(`${b.date} ${b.timeFrom || ''}`));
-
-            document.getElementById('listCountBadge').innerText = `${filtered.length} entries`;
-
-            if (filtered.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="9" class="text-center py-12 text-slate-400 italic">No scheduled entries found.</td></tr>`;
-                return;
+                html += `</div></div>`;
             }
 
-            let html = '';
-            filtered.forEach(evt => {
-                html += `
-                    <tr class="hover:bg-slate-50 transition cursor-pointer" onclick="showDetailModal('${evt.id}')">
-                        <td class="p-3 font-medium text-slate-800 whitespace-nowrap">
-                            <div class="text-slate-900">${evt.date}</div>
-                            <div class="text-xs text-slate-500 font-mono">${evt.timeFrom} - ${evt.timeTo}</div>
-                        </td>
-                        <td class="p-3 font-bold text-slate-900">${evt.name}</td>
-                        <td class="p-3 font-mono font-semibold text-blue-600">${evt.partNumber}</td>
-                        <td class="p-3"><span class="px-2.5 py-1 text-xs font-semibold rounded-full border ${getStatusBadgeClass(evt.status)}">${evt.status}</span></td>
-                        <td class="p-3"><span class="text-xs bg-slate-100 font-medium px-2 py-0.5 rounded text-slate-700">${evt.source || 'WhatsApp'}</span></td>
-                        <td class="p-3 text-slate-600 max-w-xs truncate">${evt.address}</td>
-                        <td class="p-3 text-slate-600 font-mono text-xs">${evt.mobile}</td>
-                        <td class="p-3 text-slate-500 text-xs max-w-xs truncate">${evt.remarks || '-'}</td>
-                        <td class="p-3 text-right space-x-2 whitespace-nowrap" onclick="event.stopPropagation()">
-                            <button onclick="editEvent('${evt.id}')" class="p-1.5 text-slate-400 hover:text-blue-600 rounded hover:bg-slate-100 transition"><i class="fa-solid fa-pen text-xs"></i></button>
-                            <button onclick="deleteEvent('${evt.id}')" class="p-1.5 text-slate-400 hover:text-rose-600 rounded hover:bg-rose-50 transition"><i class="fa-solid fa-trash-can text-xs"></i></button>
-                        </td>
-                    </tr>
-                `;
-            });
-            tbody.innerHTML = html;
-        }
-
-        // Mini Calendar Widget
-        function renderMiniCalendar() {
-            const container = document.getElementById('miniCalendarDays');
-            container.innerHTML = '';
-
-            const year = miniCalendarDate.getFullYear();
-            const month = miniCalendarDate.getMonth();
-
-            document.getElementById('miniCalendarMonth').innerText = miniCalendarDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-
-            const firstDayIndex = new Date(year, month, 1).getDay();
-            const lastDayDate = new Date(year, month + 1, 0).getDate();
-            const prevLastDayDate = new Date(year, month, 0).getDate();
-            const todayStr = new Date().toISOString().split('T')[0];
-
-            let html = '';
-            for (let i = firstDayIndex - 1; i >= 0; i--) {
-                html += `<span class="text-slate-300 py-1 text-[11px]">${prevLastDayDate - i}</span>`;
-            }
-
-            for (let i = 1; i <= lastDayDate; i++) {
-                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
-                const isSelected = dateStr === currentDate.toISOString().split('T')[0];
-                const isToday = dateStr === todayStr;
-
-                let cls = "py-1 text-[11px] rounded-full cursor-pointer transition font-medium ";
-                if (isSelected) cls += "bg-blue-600 text-white font-bold shadow-sm";
-                else if (isToday) cls += "bg-blue-50 text-blue-600 font-bold border border-blue-200";
-                else cls += "text-slate-700 hover:bg-slate-100";
-
-                html += `<span onclick="selectMiniDate('${dateStr}')" class="${cls}">${i}</span>`;
-            }
+            html += `</div>`;
             container.innerHTML = html;
         }
 
-        function navigateMiniCalendar(direction) {
-            miniCalendarDate.setMonth(miniCalendarDate.getMonth() + direction);
-            renderMiniCalendar();
-        }
-
-        function selectMiniDate(dateStr) {
-            currentDate = new Date(dateStr + 'T00:00:00');
-            renderApp();
-        }
-
-        function handleSearch(val) {
-            searchQuery = val;
-            renderApp();
-        }
-
-        function toggleFilterStatus(status) {
-            activeFilters[status] = !activeFilters[status];
-            renderApp();
-        }
-
-        function toggleFilter(type, checkbox) {
-            const isChecked = checkbox.checked;
-            document.querySelectorAll('.status-filter').forEach(cb => {
-                cb.checked = isChecked;
-                activeFilters[cb.value] = isChecked;
-            });
-            renderApp();
-        }
-
-        function updateStats() {
-            document.getElementById('stat-total').innerText = events.length;
-            document.getElementById('stat-pending').innerText = events.filter(e => e.status === 'Pending').length;
-            document.getElementById('stat-completed').innerText = events.filter(e => e.status === 'Completed').length;
-        }
-
-        // Modal Actions
-        function openModal() {
-            document.getElementById('modalTitle').innerText = 'New Schedule Entry';
-            document.getElementById('eventForm').reset();
-            document.getElementById('eventId').value = '';
-            document.getElementById('eventDate').value = currentDate.toISOString().split('T')[0];
-            document.getElementById('eventTimeFrom').value = '09:00';
-            document.getElementById('eventTimeTo').value = '10:00';
-            document.getElementById('otherSourceContainer').classList.add('hidden');
+        // Render Week View
+        function renderWeekView(container, items) {
+            const start = new Date(currentDate);
+            start.setDate(start.getDate() - start.getDay());
             
-            const modal = document.getElementById('eventModal');
-            const container = document.getElementById('modalContainer');
-            modal.classList.remove('hidden');
-            setTimeout(() => {
-                container.classList.remove('scale-95', 'opacity-0');
-                container.classList.add('scale-100', 'opacity-100');
-            }, 10);
+            let html = `<div class="grid grid-cols-7 divide-x divide-slate-200 bg-slate-100 text-xs font-bold text-slate-700 text-center py-2 border-b border-slate-200">`;
+            for (let i = 0; i < 7; i++) {
+                const d = new Date(start);
+                d.setDate(d.getDate() + i);
+                html += `<div>${d.toLocaleDateString('en-US', {weekday:'short', month:'short', day:'numeric'})}</div>`;
+            }
+            html += `</div><div class="grid grid-cols-7 divide-x divide-slate-200 min-h-[500px] bg-slate-50">`;
+
+            for (let i = 0; i < 7; i++) {
+                const d = new Date(start);
+                d.setDate(d.getDate() + i);
+                const dateStr = d.toISOString().split('T')[0];
+                const dayItems = items.filter(item => item.apptDate === dateStr);
+
+                html += `<div class="bg-white p-2 flex flex-col">
+                    <div class="flex justify-between items-center mb-2 pb-1 border-b border-slate-100">
+                        <span class="text-xs font-bold text-slate-600">${d.getDate()}</span>
+                        <button onclick="openModalForDate('${dateStr}')" class="text-slate-400 hover:text-blue-600 text-xs"><i class="fa-solid fa-plus"></i></button>
+                    </div>
+                    <div class="space-y-2 overflow-y-auto flex-grow">`;
+                
+                dayItems.forEach(item => {
+                    const statusColor = item.status === 'Completed' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-blue-50 text-blue-700 border-blue-200';
+                    const srcLabel = item.source === 'Other' && item.sourceOther ? item.sourceOther : item.source;
+                    html += `<div onclick="openModalForEdit('${item.id}')" class="text-xs p-2 rounded border ${statusColor} cursor-pointer shadow-sm hover:shadow transition">
+                        <div class="font-bold">${item.custName}</div>
+                        <div class="text-[11px] opacity-90">${item.timeFrom || ''} - ${item.timeTo || ''}</div>
+                        <div class="text-[10px] font-semibold mt-1 bg-white/60 px-1 py-0.5 rounded w-fit">${srcLabel || ''}</div>
+                    </div>`;
+                });
+                html += `</div></div>`;
+            }
+            html += `</div>`;
+            container.innerHTML = html;
+        }
+
+        // Render Day View
+        function renderDayView(container, items) {
+            const dateStr = currentDate.toISOString().split('T')[0];
+            const dayItems = items.filter(item => item.apptDate === dateStr);
+
+            let html = `<div class="p-6 bg-white min-h-[450px]">
+                <div class="flex justify-between items-center mb-6 border-b border-slate-200 pb-4">
+                    <h3 class="text-lg font-bold text-slate-800">${currentDate.toLocaleDateString('en-US', {weekday:'long', month:'long', day:'numeric', year:'numeric'})}</h3>
+                    <button onclick="openModalForDate('${dateStr}')" class="bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold px-3 py-2 rounded-lg transition flex items-center gap-1.5 shadow-sm"><i class="fa-solid fa-plus"></i> Add Appointment</button>
+                </div>
+                <div class="space-y-3">`;
+
+            if (dayItems.length === 0) {
+                html += `<div class="text-center py-16 text-slate-400 text-sm">No appointments scheduled for this day.</div>`;
+            } else {
+                dayItems.forEach(item => {
+                    const srcLabel = item.source === 'Other' && item.sourceOther ? item.sourceOther : item.source;
+                    html += `<div onclick="openModalForEdit('${item.id}')" class="p-4 rounded-xl border border-slate-200 hover:border-blue-300 bg-slate-50/50 hover:bg-white transition cursor-pointer flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow-sm">
+                        <div class="space-y-1">
+                            <div class="flex items-center gap-3">
+                                <span class="font-bold text-slate-900 text-base">${item.custName}</span>
+                                <span class="text-xs px-2.5 py-0.5 rounded-full font-semibold ${item.status === 'Completed' ? 'bg-emerald-100 text-emerald-800' : 'bg-blue-100 text-blue-800'}">${item.status}</span>
+                                <span class="text-xs bg-slate-200 text-slate-700 px-2 py-0.5 rounded-full font-medium">${srcLabel}</span>
+                            </div>
+                            <div class="text-xs text-slate-500 flex items-center gap-4 flex-wrap">
+                                <span class="font-medium text-slate-700"><i class="fa-regular fa-clock mr-1 text-blue-600"></i> ${item.timeFrom || 'N/A'} - ${item.timeTo || 'N/A'}</span>
+                                <span><i class="fa-solid fa-barcode mr-1 text-slate-400"></i> Part: ${item.partNumber || 'N/A'}</span>
+                                <span><i class="fa-solid fa-phone mr-1 text-slate-400"></i> ${item.mobile || 'N/A'}</span>
+                                <span><i class="fa-solid fa-location-dot mr-1 text-slate-400"></i> ${item.address || 'N/A'}</span>
+                            </div>
+                            ${item.remarks ? `<div class="text-xs text-slate-600 italic bg-white p-2 rounded border border-slate-100 mt-2">Remarks: ${item.remarks}</div>` : ''}
+                        </div>
+                    </div>`;
+                });
+            }
+            html += `</div></div>`;
+            container.innerHTML = html;
+        }
+
+        // Render List View
+        function renderListView(container, items) {
+            let html = `<div class="overflow-x-auto"><table class="w-full text-left border-collapse text-xs">
+                <thead class="bg-slate-100 text-slate-700 border-b border-slate-200">
+                    <tr>
+                        <th class="p-3 font-bold">Date & Time</th>
+                        <th class="p-3 font-bold">Customer Name</th>
+                        <th class="p-3 font-bold">Part Number</th>
+                        <th class="p-3 font-bold">Status</th>
+                        <th class="p-3 font-bold">Source</th>
+                        <th class="p-3 font-bold">Mobile</th>
+                        <th class="p-3 font-bold">Address</th>
+                        <th class="p-3 font-bold">Remarks</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 bg-white">`;
+
+            if (items.length === 0) {
+                html += `<tr><td colspan="8" class="p-8 text-center text-slate-400">No records found.</td></tr>`;
+            } else {
+                items.sort((a,b) => new Date(a.apptDate) - new Date(b.apptDate)).forEach(item => {
+                    const srcLabel = item.source === 'Other' && item.sourceOther ? item.sourceOther : item.source;
+                    html += `<tr onclick="openModalForEdit('${item.id}')" class="hover:bg-slate-50 cursor-pointer transition">
+                        <td class="p-3 font-medium text-slate-700">${item.apptDate}<br><span class="text-[10px] text-slate-400">${item.timeFrom || ''} - ${item.timeTo || ''}</span></td>
+                        <td class="p-3 font-bold text-slate-900">${item.custName}</td>
+                        <td class="p-3 text-slate-600">${item.partNumber || 'N/A'}</td>
+                        <td class="p-3"><span class="px-2 py-0.5 rounded-full font-semibold text-[10px] ${item.status === 'Completed' ? 'bg-emerald-100 text-emerald-800' : 'bg-blue-100 text-blue-800'}">${item.status}</span></td>
+                        <td class="p-3 font-medium text-slate-700">${srcLabel || ''}</td>
+                        <td class="p-3 text-slate-600">${item.mobile || 'N/A'}</td>
+                        <td class="p-3 text-slate-600">${item.address || 'N/A'}</td>
+                        <td class="p-3 text-slate-500 truncate max-w-xs">${item.remarks || ''}</td>
+                    </tr>`;
+                });
+            }
+            html += `</tbody></table></div>`;
+            container.innerHTML = html;
+        }
+
+        // Modal Handlers
+        function openModal() {
+            document.getElementById('modalTitle').innerText = "New Appointment";
+            document.getElementById('appointmentForm').reset();
+            document.getElementById('appointmentId').value = "";
+            document.getElementById('apptDate').value = new Date().toISOString().split('T')[0];
+            document.getElementById('deleteBtn').classList.add('hidden');
+            document.getElementById('sourceOtherContainer').classList.add('hidden');
+            document.getElementById('appointmentModal').classList.remove('hidden');
         }
 
         function openModalForDate(dateStr) {
             openModal();
-            document.getElementById('eventDate').value = dateStr;
+            document.getElementById('apptDate').value = dateStr;
         }
 
-        function openModalForDateTime(dateStr, timeStr) {
-            openModal();
-            document.getElementById('eventDate').value = dateStr;
-            document.getElementById('eventTimeFrom').value = timeStr;
-            const [hr, min] = timeStr.split(':').map(Number);
-            const nextHr = String((hr + 1) % 24).padStart(2, '0');
-            document.getElementById('eventTimeTo').value = `${nextHr}:${String(min).padStart(2, '0')}`;
+        function openModalForEdit(id) {
+            const item = appointments.find(i => i.id === id);
+            if (!item) return;
+
+            document.getElementById('modalTitle').innerText = "Edit Appointment";
+            document.getElementById('appointmentId').value = item.id;
+            document.getElementById('custName').value = item.custName || "";
+            document.getElementById('partNumber').value = item.partNumber || "";
+            document.getElementById('apptDate').value = item.apptDate || "";
+            document.getElementById('timeFrom').value = item.timeFrom || "";
+            document.getElementById('timeTo').value = item.timeTo || "";
+            document.getElementById('status').value = item.status || "Pending";
+            document.getElementById('source').value = item.source || "WorkMarket";
+            
+            checkSourceOther();
+            if (item.source === 'Other') {
+                document.getElementById('sourceOther').value = item.sourceOther || "";
+            }
+
+            document.getElementById('mobile').value = item.mobile || "";
+            document.getElementById('address').value = item.address || "";
+            document.getElementById('remarks').value = item.remarks || "";
+            
+            document.getElementById('deleteBtn').classList.remove('hidden');
+            document.getElementById('appointmentModal').classList.remove('hidden');
         }
 
         function closeModal() {
-            const modal = document.getElementById('eventModal');
-            const container = document.getElementById('modalContainer');
-            container.classList.remove('scale-100', 'opacity-100');
-            container.classList.add('scale-95', 'opacity-0');
-            setTimeout(() => {
-                modal.classList.add('hidden');
-            }, 200);
+            document.getElementById('appointmentModal').classList.add('hidden');
         }
 
-        function saveEvent(e) {
-            e.preventDefault();
-            const id = document.getElementById('eventId').value;
-            const sourceSelect = document.getElementById('eventSource').value;
-            let finalSource = sourceSelect;
-            if (sourceSelect === 'Other') {
-                finalSource = document.getElementById('eventSourceOther').value.trim() || 'Other';
+        function checkSourceOther() {
+            const src = document.getElementById('source').value;
+            const container = document.getElementById('sourceOtherContainer');
+            if (src === 'Other') {
+                container.classList.remove('hidden');
+            } else {
+                container.classList.add('hidden');
             }
+        }
 
+        function saveAppointment(e) {
+            e.preventDefault();
+            const id = document.getElementById('appointmentId').value;
+            const sourceVal = document.getElementById('source').value;
+            
             const data = {
-                id: id || 'evt-' + Date.now(),
-                date: document.getElementById('eventDate').value,
-                timeFrom: document.getElementById('eventTimeFrom').value,
-                timeTo: document.getElementById('eventTimeTo').value,
-                name: document.getElementById('eventCustomerName').value.trim(),
-                partNumber: document.getElementById('eventPartNumber').value.trim(),
-                status: document.getElementById('eventStatus').value,
-                source: finalSource,
-                address: document.getElementById('eventAddress').value.trim(),
-                mobile: document.getElementById('eventMobile').value.trim(),
-                remarks: document.getElementById('eventRemarks').value.trim()
+                id: id || 'rec_' + Date.now(),
+                custName: document.getElementById('custName').value,
+                partNumber: document.getElementById('partNumber').value,
+                apptDate: document.getElementById('apptDate').value,
+                timeFrom: document.getElementById('timeFrom').value,
+                timeTo: document.getElementById('timeTo').value,
+                status: document.getElementById('status').value,
+                source: sourceVal,
+                sourceOther: sourceVal === 'Other' ? document.getElementById('sourceOther').value : '',
+                mobile: document.getElementById('mobile').value,
+                address: document.getElementById('address').value,
+                remarks: document.getElementById('remarks').value
             };
 
             if (id) {
-                const idx = events.findIndex(ev => ev.id === id);
-                if (idx !== -1) events[idx] = data;
-                showToast('Entry successfully updated!', 'success');
+                const index = appointments.findIndex(i => i.id === id);
+                if (index !== -1) appointments[index] = data;
             } else {
-                events.push(data);
-                showToast('New entry successfully scheduled!', 'success');
+                appointments.push(data);
             }
 
             saveToStorage();
@@ -984,103 +663,29 @@
             renderApp();
         }
 
-        function editEvent(id) {
-            const evt = events.find(e => e.id === id);
-            if (!evt) return;
-
-            document.getElementById('modalTitle').innerText = 'Edit Schedule Entry';
-            document.getElementById('eventId').value = evt.id;
-            document.getElementById('eventDate').value = evt.date;
-            document.getElementById('eventTimeFrom').value = evt.timeFrom || '09:00';
-            document.getElementById('eventTimeTo').value = evt.timeTo || '10:00';
-            document.getElementById('eventCustomerName').value = evt.name;
-            document.getElementById('eventPartNumber').value = evt.partNumber;
-            document.getElementById('eventStatus').value = evt.status;
-
-            const standardSources = ['WorkMarket', 'Thumbtack', 'Barrister', 'Nextdoor', 'Google'];
-            if (standardSources.includes(evt.source)) {
-                document.getElementById('eventSource').value = evt.source;
-                document.getElementById('otherSourceContainer').classList.add('hidden');
-            } else {
-                document.getElementById('eventSource').value = 'Other';
-                document.getElementById('otherSourceContainer').classList.remove('hidden');
-                document.getElementById('eventSourceOther').value = evt.source;
-            }
-
-            document.getElementById('eventAddress').value = evt.address;
-            document.getElementById('eventMobile').value = evt.mobile;
-            document.getElementById('eventRemarks').value = evt.remarks || '';
-
-            const modal = document.getElementById('eventModal');
-            const container = document.getElementById('modalContainer');
-            modal.classList.remove('hidden');
-            setTimeout(() => {
-                container.classList.remove('scale-95', 'opacity-0');
-                container.classList.add('scale-100', 'opacity-100');
-            }, 10);
-        }
-
-        function deleteEvent(id) {
-            if (confirm('Are you sure you want to delete this scheduled entry?')) {
-                events = events.filter(e => e.id !== id);
+        function deleteCurrentAppointment() {
+            const id = document.getElementById('appointmentId').value;
+            if (id && confirm("Are you sure you want to delete this appointment?")) {
+                appointments = appointments.filter(i => i.id !== id);
                 saveToStorage();
+                closeModal();
                 renderApp();
-                showToast('Entry deleted successfully.', 'error');
             }
         }
 
-        // Detail Modal
-        function showDetailModal(id) {
-            activeDetailId = id;
-            const evt = events.find(e => e.id === id);
-            if (!evt) return;
-
-            const badge = document.getElementById('detailStatusBadge');
-            badge.innerText = evt.status;
-            badge.className = `px-2.5 py-1 text-xs font-semibold rounded-full border ${getStatusBadgeClass(evt.status)}`;
-
-            document.getElementById('detailTimeBadge').innerText = `${evt.date} (${evt.timeFrom} - ${evt.timeTo})`;
-            document.getElementById('detailName').innerText = evt.name;
-            document.getElementById('detailPartNumber').innerText = evt.partNumber;
-            document.getElementById('detailSource').innerText = evt.source || 'WhatsApp';
-            
-            const mobileLink = document.getElementById('detailMobileLink');
-            mobileLink.innerText = evt.mobile;
-            mobileLink.href = `tel:${evt.mobile}`;
-
-            document.getElementById('detailAddressText').innerText = evt.address;
-            document.getElementById('detailRemarks').innerText = evt.remarks || 'No remarks provided.';
-
-            document.getElementById('detailModal').classList.remove('hidden');
-        }
-
-        function closeDetailModal() {
-            document.getElementById('detailModal').classList.add('hidden');
-            activeDetailId = null;
-        }
-
-        function editCurrentDetail() {
-            const id = activeDetailId;
-            closeDetailModal();
-            editEvent(id);
-        }
-
-        function deleteCurrentDetail() {
-            const id = activeDetailId;
-            closeDetailModal();
-            deleteEvent(id);
-        }
-
-        // Reports & Export Center Functions
-        let currentReportFilteredEvents = [];
+        // Reports Center
+        let currentReportFilteredItems = [];
 
         function openReportModal() {
-            // Set default month value to current YYYY-MM
             const now = new Date();
-            const yyyyMm = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-            document.getElementById('reportMonthInput').value = yyyyMm;
+            document.getElementById('reportMonthInput').value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+            const firstDayOfWeek = new Date(now);
+            firstDayOfWeek.setDate(now.getDate() - now.getDay());
+            document.getElementById('reportWeekInput').value = firstDayOfWeek.toISOString().split('T')[0];
+            document.getElementById('reportDateFrom').value = now.toISOString().split('T')[0];
+            document.getElementById('reportDateTo').value = now.toISOString().split('T')[0];
             
-            generateReportData();
+            toggleReportPeriod();
             document.getElementById('reportModal').classList.remove('hidden');
         }
 
@@ -1088,118 +693,99 @@
             document.getElementById('reportModal').classList.add('hidden');
         }
 
-        function toggleReportType() {
+        function toggleReportPeriod() {
             const type = document.getElementById('reportType').value;
             document.getElementById('reportMonthContainer').classList.toggle('hidden', type !== 'month');
-            document.getElementById('reportDateFromContainer').classList.toggle('hidden', type !== 'custom');
-            document.getElementById('reportDateToContainer').classList.toggle('hidden', type !== 'custom');
-            generateReportData();
+            document.getElementById('reportWeekContainer').classList.toggle('hidden', type !== 'week');
+            document.getElementById('reportCustomContainer').classList.toggle('hidden', type !== 'custom');
+            generateReportPreview();
         }
 
-        function generateReportData() {
+        function generateReportPreview() {
             const type = document.getElementById('reportType').value;
-            const tbody = document.getElementById('reportTableBody');
-            const badgeContainer = document.getElementById('reportBadgeStats');
-            
-            let filtered = [];
-            let titleStr = '';
+            let startDate = '', endDate = '';
 
             if (type === 'month') {
-                const monthVal = document.getElementById('reportMonthInput').value; // YYYY-MM
-                if (!monthVal) return;
-                const [yr, mo] = monthVal.split('-');
-                filtered = events.filter(e => {
-                    if (!e.date) return false;
-                    const [ey, em] = e.date.split('-');
-                    return ey === yr && em === mo;
-                });
-                titleStr = `Schedule Report for Month: ${monthVal}`;
+                const val = document.getElementById('reportMonthInput').value;
+                if (!val) return;
+                const [y, m] = val.split('-');
+                startDate = `${y}-${m}-01`;
+                const lastD = new Date(y, m, 0).getDate();
+                endDate = `${y}-${m}-${lastD}`;
             } else if (type === 'week') {
-                const startOfWeek = new Date(currentDate);
-                startOfWeek.setDate(currentDate.getDate() - currentDate.getDay());
-                const endOfWeek = new Date(startOfWeek);
-                endOfWeek.setDate(startOfWeek.getDate() + 6);
-
-                filtered = events.filter(e => {
-                    const d = new Date(e.date);
-                    return d >= startOfWeek && d <= endOfWeek;
-                });
-                titleStr = `Schedule Report for Current Week`;
+                const val = document.getElementById('reportWeekInput').value;
+                if (!val) return;
+                const start = new Date(val);
+                const end = new Date(start);
+                end.setDate(end.getDate() + 6);
+                startDate = start.toISOString().split('T')[0];
+                endDate = end.toISOString().split('T')[0];
             } else if (type === 'custom') {
-                const fromStr = document.getElementById('reportDateFrom').value;
-                const toStr = document.getElementById('reportDateTo').value;
-                filtered = events.filter(e => {
-                    if (!e.date) return false;
-                    if (fromStr && e.date < fromStr) return false;
-                    if (toStr && e.date > toStr) return false;
-                    return true;
-                });
-                titleStr = `Custom Range Report (${fromStr || 'Start'} to ${toStr || 'End'})`;
+                startDate = document.getElementById('reportDateFrom').value;
+                endDate = document.getElementById('reportDateTo').value;
+                if (!startDate || !endDate) return;
             }
 
-            filtered.sort((a,b) => `${a.date} ${a.timeFrom || ''}`.localeCompare(`${b.date} ${b.timeFrom || ''}`));
-            currentReportFilteredEvents = filtered;
+            currentReportFilteredItems = appointments.filter(item => {
+                return item.apptDate >= startDate && item.apptDate <= endDate;
+            });
 
-            document.getElementById('reportTitleText').innerText = titleStr;
-            document.getElementById('reportSubText').innerText = `Total records: ${filtered.length} | Generated on ${new Date().toLocaleDateString()}`;
-            document.getElementById('reportCountLabel').innerText = `${filtered.length} records matching criteria`;
+            // Stats
+            const total = currentReportFilteredItems.length;
+            const completed = currentReportFilteredItems.filter(i => i.status === 'Completed').length;
+            const pending = currentReportFilteredItems.filter(i => i.status === 'Pending').length;
 
-            // Badge statistics
-            const pendingCount = filtered.filter(e => e.status === 'Pending').length;
-            const completedCount = filtered.filter(e => e.status === 'Completed').length;
-            badgeContainer.innerHTML = `
-                <span class="px-2.5 py-1 bg-amber-100 text-amber-800 rounded font-semibold">Pending: ${pendingCount}</span>
-                <span class="px-2.5 py-1 bg-emerald-100 text-emerald-800 rounded font-semibold">Completed: ${completedCount}</span>
+            document.getElementById('reportStats').innerHTML = `
+                <div class="bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100 text-blue-900">Total Records: <strong class="font-bold">${total}</strong></div>
+                <div class="bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-100 text-emerald-900">Completed: <strong class="font-bold">${completed}</strong></div>
+                <div class="bg-amber-50 px-3 py-1.5 rounded-lg border border-amber-100 text-amber-900">Pending: <strong class="font-bold">${pending}</strong></div>
             `;
 
-            if (filtered.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="8" class="text-center py-8 text-slate-400 italic">No entries found for this report period.</td></tr>`;
-                return;
-            }
-
+            // Table Preview
+            const tbody = document.getElementById('reportTableBody');
             let html = '';
-            filtered.forEach(evt => {
-                html += `
-                    <tr class="hover:bg-slate-50">
-                        <td class="p-2.5 whitespace-nowrap font-medium text-slate-800">${evt.date} (${evt.timeFrom}-${evt.timeTo})</td>
-                        <td class="p-2.5 font-bold text-slate-900">${evt.name}</td>
-                        <td class="p-2.5 font-mono text-blue-600">${evt.partNumber}</td>
-                        <td class="p-2.5"><span class="px-2 py-0.5 text-[10px] font-semibold rounded-full border ${getStatusBadgeClass(evt.status)}">${evt.status}</span></td>
-                        <td class="p-2.5"><span class="bg-slate-100 px-2 py-0.5 rounded text-slate-700 font-medium text-[11px]">${evt.source || 'WhatsApp'}</span></td>
-                        <td class="p-2.5 font-mono text-slate-600">${evt.mobile}</td>
-                        <td class="p-2.5 text-slate-600">${evt.address}</td>
-                        <td class="p-2.5 text-slate-500">${evt.remarks || '-'}</td>
-                    </tr>
-                `;
-            });
+            if (currentReportFilteredItems.length === 0) {
+                html = `<tr><td colspan="8" class="p-6 text-center text-slate-400">No records found for the selected date range.</td></tr>`;
+            } else {
+                currentReportFilteredItems.sort((a,b) => new Date(a.apptDate) - new Date(b.apptDate)).forEach(item => {
+                    const srcLabel = item.source === 'Other' && item.sourceOther ? item.sourceOther : item.source;
+                    html += `<tr>
+                        <td class="p-3">${item.apptDate}<br><span class="text-[10px] text-slate-400">${item.timeFrom || ''} - ${item.timeTo || ''}</span></td>
+                        <td class="p-3 font-bold">${item.custName}</td>
+                        <td class="p-3">${item.partNumber || 'N/A'}</td>
+                        <td class="p-3"><span class="px-2 py-0.5 rounded-full font-semibold text-[10px] ${item.status === 'Completed' ? 'bg-emerald-100 text-emerald-800' : 'bg-blue-100 text-blue-800'}">${item.status}</span></td>
+                        <td class="p-3">${srcLabel || ''}</td>
+                        <td class="p-3">${item.mobile || 'N/A'}</td>
+                        <td class="p-3">${item.address || 'N/A'}</td>
+                        <td class="p-3 text-slate-500">${item.remarks || ''}</td>
+                    </tr>`;
+                });
+            }
             tbody.innerHTML = html;
         }
 
-        function printReport() {
-            window.print();
-        }
-
-        function exportReportCSV() {
-            if (currentReportFilteredEvents.length === 0) {
-                showToast('No records to export.', 'error');
+        function exportReportExcel() {
+            if (currentReportFilteredItems.length === 0) {
+                alert("No records to export for this date range.");
                 return;
             }
 
             let csvContent = "data:text/csv;charset=utf-8,";
             csvContent += "Date,Time From,Time To,Customer Name,Part Number,Status,Source,Mobile,Address,Remarks\r\n";
 
-            currentReportFilteredEvents.forEach(e => {
+            currentReportFilteredItems.forEach(item => {
+                const srcLabel = item.source === 'Other' && item.sourceOther ? item.sourceOther : item.source;
                 const row = [
-                    e.date,
-                    e.timeFrom || '',
-                    e.timeTo || '',
-                    `"${(e.name || '').replace(/"/g, '""')}"`,
-                    `"${(e.partNumber || '').replace(/"/g, '""')}"`,
-                    e.status,
-                    e.source || 'WhatsApp',
-                    `"${(e.mobile || '').replace(/"/g, '""')}"`,
-                    `"${(e.address || '').replace(/"/g, '""')}"`,
-                    `"${(e.remarks || '').replace(/"/g, '""')}"`
+                    item.apptDate,
+                    item.timeFrom || '',
+                    item.timeTo || '',
+                    `"${(item.custName || '').replace(/"/g, '""')}"`,
+                    `"${(item.partNumber || '').replace(/"/g, '""')}"`,
+                    item.status || '',
+                    `"${(srcLabel || '').replace(/"/g, '""')}"`,
+                    `"${(item.mobile || '').replace(/"/g, '""')}"`,
+                    `"${(item.address || '').replace(/"/g, '""')}"`,
+                    `"${(item.remarks || '').replace(/"/g, '""')}"`
                 ];
                 csvContent += row.join(",") + "\r\n";
             });
@@ -1211,30 +797,14 @@
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-            showToast('Report successfully exported to Excel/CSV!', 'success');
         }
 
-        // Toast Notification
-        function showToast(message, type = 'success') {
-            const toast = document.getElementById('toast');
-            const msgEl = document.getElementById('toastMessage');
-            const iconEl = document.getElementById('toastIcon');
-
-            msgEl.innerText = message;
-            if (type === 'success') {
-                iconEl.className = 'fa-solid fa-circle-check text-emerald-400';
-            } else {
-                iconEl.className = 'fa-solid fa-circle-exclamation text-rose-400';
-            }
-
-            toast.classList.remove('translate-y-20', 'opacity-0');
-            toast.classList.add('translate-y-0', 'opacity-100');
-
-            setTimeout(() => {
-                toast.classList.remove('translate-y-0', 'opacity-100');
-                toast.classList.add('translate-y-20', 'opacity-0');
-            }, 3000);
+        function printReport() {
+            window.print();
         }
+
+        // Initial Render
+        renderApp();
     </script>
 </body>
 </html>
