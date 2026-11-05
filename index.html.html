@@ -16,6 +16,11 @@
         .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        @media print {
+            body * { visibility: hidden; }
+            #reportPrintArea, #reportPrintArea * { visibility: visible; }
+            #reportPrintArea { position: absolute; left: 0; top: 0; width: 100%; }
+        }
     </style>
 </head>
 <body class="h-full bg-slate-50 text-slate-800 flex flex-col overflow-hidden">
@@ -56,6 +61,12 @@
                 <button onclick="switchView('day')" id="btn-day" class="px-3 py-1 text-xs font-medium rounded-md transition text-slate-600 hover:text-slate-900">Day</button>
                 <button onclick="switchView('list')" id="btn-list" class="px-3 py-1 text-xs font-medium rounded-md transition text-slate-600 hover:text-slate-900"><i class="fa-solid fa-list mr-1"></i>List</button>
             </div>
+
+            <!-- Report Button -->
+            <button onclick="openReportModal()" class="bg-slate-800 hover:bg-slate-900 text-white font-medium px-3.5 py-1.5 rounded-lg text-sm shadow transition flex items-center space-x-1.5">
+                <i class="fa-solid fa-file-excel text-xs text-emerald-400"></i>
+                <span class="hidden lg:inline">Reports & Export</span>
+            </button>
 
             <!-- New Event Button -->
             <button onclick="openModal()" class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-1.5 rounded-lg text-sm shadow transition flex items-center space-x-1.5">
@@ -171,10 +182,11 @@
                     <table class="w-full text-left border-collapse">
                         <thead>
                             <tr class="bg-slate-100 border-b border-slate-200 text-xs font-semibold text-slate-600 uppercase tracking-wider sticky top-0 z-10">
-                                <th class="p-3">Date & Time Range</th>
+                                <th class="p-3">Date & Time</th>
                                 <th class="p-3">Customer Name</th>
                                 <th class="p-3">Part Number</th>
                                 <th class="p-3">Status</th>
+                                <th class="p-3">Source</th>
                                 <th class="p-3">Address</th>
                                 <th class="p-3">Mobile</th>
                                 <th class="p-3">Remarks</th>
@@ -241,14 +253,27 @@
                         <input type="text" id="eventPartNumber" required placeholder="e.g. PN-9842-AX" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Mobile *</label>
-                        <input type="text" id="eventMobile" required placeholder="+1 (555) 019-2834" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Source *</label>
+                        <select id="eventSource" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                            <option value="WhatsApp">WhatsApp</option>
+                            <option value="Phone Call">Phone Call</option>
+                            <option value="Walk-in">Walk-in</option>
+                            <option value="Website">Website</option>
+                            <option value="Email">Email</option>
+                            <option value="Other">Other</option>
+                        </select>
                     </div>
                 </div>
 
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Address *</label>
-                    <input type="text" id="eventAddress" required placeholder="Street address, City, State" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Mobile *</label>
+                        <input type="text" id="eventMobile" required placeholder="+1 (555) 019-2834" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Address *</label>
+                        <input type="text" id="eventAddress" required placeholder="Street address, City, State" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
                 </div>
 
                 <div>
@@ -285,16 +310,19 @@
                         <p id="detailPartNumber" class="text-sm font-bold text-blue-600 font-mono">PN-0000</p>
                     </div>
                     <div>
+                        <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">Source</span>
+                        <p id="detailSource" class="text-sm font-semibold text-slate-700">WhatsApp</p>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
                         <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">Mobile</span>
                         <p id="detailMobile" class="text-sm font-medium text-slate-800"><a href="#" id="detailMobileLink" class="text-blue-600 hover:underline">Phone</a></p>
                     </div>
-                </div>
-                <div>
-                    <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">Address</span>
-                    <p id="detailAddress" class="text-sm text-slate-700 flex items-start space-x-1.5 mt-0.5">
-                        <i class="fa-solid fa-location-dot text-rose-500 mt-0.5"></i>
-                        <span id="detailAddressText">Address Here</span>
-                    </p>
+                    <div>
+                        <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">Address</span>
+                        <p id="detailAddressText" class="text-sm text-slate-700">Address Here</p>
+                    </div>
                 </div>
                 <div>
                     <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">Remarks / Notes</span>
@@ -308,6 +336,96 @@
                     <button onclick="editCurrentDetail()" class="bg-slate-800 hover:bg-slate-900 text-white text-sm font-medium px-4 py-1.5 rounded-lg shadow transition flex items-center space-x-1.5">
                         <i class="fa-solid fa-pen text-xs"></i>
                         <span>Edit Entry</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reports & Export Center Modal -->
+    <div id="reportModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="px-6 py-4 bg-slate-800 text-white flex items-center justify-between shrink-0">
+                <div class="flex items-center space-x-2">
+                    <i class="fa-solid fa-file-excel text-emerald-400 text-lg"></i>
+                    <h3 class="font-bold text-base">TEKSHAWN Reports & Export Center</h3>
+                </div>
+                <button onclick="closeReportModal()" class="text-slate-300 hover:text-white p-1.5 rounded-lg transition"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            
+            <div class="p-6 bg-slate-50 border-b border-slate-200 grid grid-cols-1 md:grid-cols-4 gap-4 shrink-0">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Report Filter Type</label>
+                    <select id="reportType" onchange="toggleReportType()" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white font-medium focus:ring-2 focus:ring-blue-500">
+                        <option value="month">Month View</option>
+                        <option value="week">Current Week</option>
+                        <option value="custom">Custom Date Range</option>
+                    </select>
+                </div>
+                <div id="reportMonthContainer">
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Select Month</label>
+                    <input type="month" id="reportMonthInput" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div id="reportDateFromContainer" class="hidden">
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">From Date</label>
+                    <input type="date" id="reportDateFrom" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div id="reportDateToContainer" class="hidden">
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">To Date</label>
+                    <input type="date" id="reportDateTo" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div class="flex items-end">
+                    <button onclick="generateReportData()" class="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg text-sm shadow transition flex items-center justify-center space-x-1.5">
+                        <i class="fa-solid fa-filter text-xs"></i>
+                        <span>Generate Report</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Report Results View area -->
+            <div id="reportPrintArea" class="flex-1 overflow-y-auto p-6 bg-white custom-scrollbar space-y-4">
+                <div class="flex justify-between items-center border-b pb-4">
+                    <div>
+                        <h4 id="reportTitleText" class="text-lg font-bold text-slate-900">Schedule Activity Report</h4>
+                        <p id="reportSubText" class="text-xs text-slate-500">Generated on demand</p>
+                    </div>
+                    <div id="reportBadgeStats" class="flex space-x-2 text-xs">
+                        <!-- Stats badges -->
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse text-xs">
+                        <thead>
+                            <tr class="bg-slate-100 border-b border-slate-200 text-slate-600 uppercase font-semibold">
+                                <th class="p-2.5">Date & Time</th>
+                                <th class="p-2.5">Customer Name</th>
+                                <th class="p-2.5">Part Number</th>
+                                <th class="p-2.5">Status</th>
+                                <th class="p-2.5">Source</th>
+                                <th class="p-2.5">Mobile</th>
+                                <th class="p-2.5">Address</th>
+                                <th class="p-2.5">Remarks</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reportTableBody" class="divide-y divide-slate-200">
+                            <!-- Report rows -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Report Footer Actions -->
+            <div class="px-6 py-4 bg-slate-50 border-t border-slate-200 flex justify-between items-center shrink-0">
+                <span id="reportCountLabel" class="text-xs font-semibold text-slate-600">0 records found</span>
+                <div class="flex space-x-3">
+                    <button onclick="printReport()" class="px-4 py-2 border border-slate-300 hover:bg-slate-100 text-slate-700 rounded-lg text-sm font-medium transition flex items-center space-x-1.5">
+                        <i class="fa-solid fa-print text-xs"></i>
+                        <span>Print / PDF</span>
+                    </button>
+                    <button onclick="exportReportCSV()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-medium shadow transition flex items-center space-x-1.5">
+                        <i class="fa-solid fa-file-excel text-xs"></i>
+                        <span>Export Excel (.csv)</span>
                     </button>
                 </div>
             </div>
@@ -332,6 +450,7 @@
                 name: 'Acme Logistics Corp',
                 partNumber: 'PN-CHIP-408',
                 status: 'Pending',
+                source: 'WhatsApp',
                 address: '104 Industrial Pkwy, Sector 4, Metro City',
                 mobile: '+1 (555) 382-9100',
                 remarks: 'Handle with extreme care. Fragile electronic module.'
@@ -344,6 +463,7 @@
                 name: 'Apex Manufacturing',
                 partNumber: 'PN-VALVE-88X',
                 status: 'In Progress',
+                source: 'Phone Call',
                 address: '782 Titanium Ave, Bay Area, CA',
                 mobile: '+1 (555) 921-4820',
                 remarks: 'Call 30 minutes prior to arrival at loading dock #4.'
@@ -351,7 +471,7 @@
         ];
 
         // State Management
-        let events = JSON.parse(localStorage.getItem('dispatch_calendar_events')) || defaultEvents;
+        let events = JSON.parse(localStorage.getItem('tekshawn_calendar_events')) || defaultEvents;
         let currentDate = new Date();
         let miniCalendarDate = new Date();
         let currentView = 'month'; // month, week, day, list
@@ -366,18 +486,18 @@
 
         // Initialize App on Load
         window.addEventListener('DOMContentLoaded', () => {
-            // Backward compatibility check for older saved data records with single time field
             events.forEach(e => {
                 if (!e.timeFrom && e.time) {
                     e.timeFrom = e.time;
                     e.timeTo = e.time;
                 }
+                if (!e.source) e.source = 'WhatsApp';
             });
             renderApp();
         });
 
         function saveToStorage() {
-            localStorage.setItem('dispatch_calendar_events', JSON.stringify(events));
+            localStorage.setItem('tekshawn_calendar_events', JSON.stringify(events));
             updateStats();
         }
 
@@ -392,7 +512,6 @@
             document.getElementById('view-day-container').classList.toggle('hidden', currentView !== 'day');
             document.getElementById('view-list-container').classList.toggle('hidden', currentView !== 'list');
 
-            // Update tab button styles
             ['month', 'week', 'day', 'list'].forEach(v => {
                 const btn = document.getElementById(`btn-${v}`);
                 if (v === currentView) {
@@ -469,12 +588,11 @@
             }
         }
 
-        // Filter Check
         function eventPassesFilters(evt) {
             if (!activeFilters[evt.status]) return false;
             if (searchQuery) {
                 const q = searchQuery.toLowerCase();
-                const matchStr = `${evt.name} ${evt.partNumber} ${evt.address} ${evt.mobile} ${evt.remarks}`.toLowerCase();
+                const matchStr = `${evt.name} ${evt.partNumber} ${evt.address} ${evt.mobile} ${evt.source} ${evt.remarks}`.toLowerCase();
                 if (!matchStr.includes(q)) return false;
             }
             return true;
@@ -491,11 +609,9 @@
             const firstDayIndex = new Date(year, month, 1).getDay();
             const lastDayDate = new Date(year, month + 1, 0).getDate();
             const prevLastDayDate = new Date(year, month, 0).getDate();
-
             const todayStr = new Date().toISOString().split('T')[0];
 
             let cellsHTML = '';
-
             for (let i = firstDayIndex - 1; i >= 0; i--) {
                 const dayNum = prevLastDayDate - i;
                 const prevMonth = month === 0 ? 11 : month - 1;
@@ -636,6 +752,7 @@
                                     <span class="px-2.5 py-0.5 text-xs font-semibold rounded-full border ${getStatusBadgeClass(evt.status)}">${evt.status}</span>
                                     <span class="text-xs text-slate-500 font-medium"><i class="fa-regular fa-clock mr-1"></i>${evt.timeFrom} - ${evt.timeTo}</span>
                                     <span class="font-mono font-semibold text-blue-600 text-xs bg-blue-50 px-2 py-0.5 rounded">${evt.partNumber}</span>
+                                    <span class="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-medium">${evt.source || 'WhatsApp'}</span>
                                 </div>
                                 <div class="font-bold text-slate-900 text-base">${evt.name}</div>
                                 <div class="text-xs text-slate-600 flex items-center space-x-1"><i class="fa-solid fa-location-dot text-rose-500"></i><span>${evt.address}</span></div>
@@ -670,7 +787,7 @@
             document.getElementById('listCountBadge').innerText = `${filtered.length} entries`;
 
             if (filtered.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="8" class="text-center py-12 text-slate-400 italic">No scheduled entries found.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="9" class="text-center py-12 text-slate-400 italic">No scheduled entries found.</td></tr>`;
                 return;
             }
 
@@ -685,6 +802,7 @@
                         <td class="p-3 font-bold text-slate-900">${evt.name}</td>
                         <td class="p-3 font-mono font-semibold text-blue-600">${evt.partNumber}</td>
                         <td class="p-3"><span class="px-2.5 py-1 text-xs font-semibold rounded-full border ${getStatusBadgeClass(evt.status)}">${evt.status}</span></td>
+                        <td class="p-3"><span class="text-xs bg-slate-100 font-medium px-2 py-0.5 rounded text-slate-700">${evt.source || 'WhatsApp'}</span></td>
                         <td class="p-3 text-slate-600 max-w-xs truncate">${evt.address}</td>
                         <td class="p-3 text-slate-600 font-mono text-xs">${evt.mobile}</td>
                         <td class="p-3 text-slate-500 text-xs max-w-xs truncate">${evt.remarks || '-'}</td>
@@ -743,7 +861,6 @@
             renderApp();
         }
 
-        // Search and Filters
         function handleSearch(val) {
             searchQuery = val;
             renderApp();
@@ -769,7 +886,7 @@
             document.getElementById('stat-completed').innerText = events.filter(e => e.status === 'Completed').length;
         }
 
-        // Modal Actions (Add / Edit)
+        // Modal Actions
         function openModal() {
             document.getElementById('modalTitle').innerText = 'New Schedule Entry';
             document.getElementById('eventForm').reset();
@@ -796,7 +913,6 @@
             openModal();
             document.getElementById('eventDate').value = dateStr;
             document.getElementById('eventTimeFrom').value = timeStr;
-            // auto calculate timeTo +1 hr
             const [hr, min] = timeStr.split(':').map(Number);
             const nextHr = String((hr + 1) % 24).padStart(2, '0');
             document.getElementById('eventTimeTo').value = `${nextHr}:${String(min).padStart(2, '0')}`;
@@ -823,6 +939,7 @@
                 name: document.getElementById('eventCustomerName').value.trim(),
                 partNumber: document.getElementById('eventPartNumber').value.trim(),
                 status: document.getElementById('eventStatus').value,
+                source: document.getElementById('eventSource').value,
                 address: document.getElementById('eventAddress').value.trim(),
                 mobile: document.getElementById('eventMobile').value.trim(),
                 remarks: document.getElementById('eventRemarks').value.trim()
@@ -849,11 +966,12 @@
             document.getElementById('modalTitle').innerText = 'Edit Schedule Entry';
             document.getElementById('eventId').value = evt.id;
             document.getElementById('eventDate').value = evt.date;
-            document.getElementById('eventTimeFrom').value = evt.timeFrom || evt.time || '09:00';
+            document.getElementById('eventTimeFrom').value = evt.timeFrom || '09:00';
             document.getElementById('eventTimeTo').value = evt.timeTo || '10:00';
             document.getElementById('eventCustomerName').value = evt.name;
             document.getElementById('eventPartNumber').value = evt.partNumber;
             document.getElementById('eventStatus').value = evt.status;
+            document.getElementById('eventSource').value = evt.source || 'WhatsApp';
             document.getElementById('eventAddress').value = evt.address;
             document.getElementById('eventMobile').value = evt.mobile;
             document.getElementById('eventRemarks').value = evt.remarks || '';
@@ -876,7 +994,7 @@
             }
         }
 
-        // Detail View Modal
+        // Detail Modal
         function showDetailModal(id) {
             activeDetailId = id;
             const evt = events.find(e => e.id === id);
@@ -889,6 +1007,7 @@
             document.getElementById('detailTimeBadge').innerText = `${evt.date} (${evt.timeFrom} - ${evt.timeTo})`;
             document.getElementById('detailName').innerText = evt.name;
             document.getElementById('detailPartNumber').innerText = evt.partNumber;
+            document.getElementById('detailSource').innerText = evt.source || 'WhatsApp';
             
             const mobileLink = document.getElementById('detailMobileLink');
             mobileLink.innerText = evt.mobile;
@@ -897,8 +1016,7 @@
             document.getElementById('detailAddressText').innerText = evt.address;
             document.getElementById('detailRemarks').innerText = evt.remarks || 'No remarks provided.';
 
-            const modal = document.getElementById('detailModal');
-            modal.classList.remove('hidden');
+            document.getElementById('detailModal').classList.remove('hidden');
         }
 
         function closeDetailModal() {
@@ -918,7 +1036,150 @@
             deleteEvent(id);
         }
 
-        // Toast Alert Notification
+        // Reports & Export Center Functions
+        let currentReportFilteredEvents = [];
+
+        function openReportModal() {
+            // Set default month value to current YYYY-MM
+            const now = new Date();
+            const yyyyMm = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+            document.getElementById('reportMonthInput').value = yyyyMm;
+            
+            generateReportData();
+            document.getElementById('reportModal').classList.remove('hidden');
+        }
+
+        function closeReportModal() {
+            document.getElementById('reportModal').classList.add('hidden');
+        }
+
+        function toggleReportType() {
+            const type = document.getElementById('reportType').value;
+            document.getElementById('reportMonthContainer').classList.toggle('hidden', type !== 'month');
+            document.getElementById('reportDateFromContainer').classList.toggle('hidden', type !== 'custom');
+            document.getElementById('reportDateToContainer').classList.toggle('hidden', type !== 'custom');
+            generateReportData();
+        }
+
+        function generateReportData() {
+            const type = document.getElementById('reportType').value;
+            const tbody = document.getElementById('reportTableBody');
+            const badgeContainer = document.getElementById('reportBadgeStats');
+            
+            let filtered = [];
+            let titleStr = '';
+
+            if (type === 'month') {
+                const monthVal = document.getElementById('reportMonthInput').value; // YYYY-MM
+                if (!monthVal) return;
+                const [yr, mo] = monthVal.split('-');
+                filtered = events.filter(e => {
+                    if (!e.date) return false;
+                    const [ey, em] = e.date.split('-');
+                    return ey === yr && em === mo;
+                });
+                titleStr = `Schedule Report for Month: ${monthVal}`;
+            } else if (type === 'week') {
+                const startOfWeek = new Date(currentDate);
+                startOfWeek.setDate(currentDate.getDate() - currentDate.getDay());
+                const endOfWeek = new Date(startOfWeek);
+                endOfWeek.setDate(startOfWeek.getDate() + 6);
+
+                filtered = events.filter(e => {
+                    const d = new Date(e.date);
+                    return d >= startOfWeek && d <= endOfWeek;
+                });
+                titleStr = `Schedule Report for Current Week`;
+            } else if (type === 'custom') {
+                const fromStr = document.getElementById('reportDateFrom').value;
+                const toStr = document.getElementById('reportDateTo').value;
+                filtered = events.filter(e => {
+                    if (!e.date) return false;
+                    if (fromStr && e.date < fromStr) return false;
+                    if (toStr && e.date > toStr) return false;
+                    return true;
+                });
+                titleStr = `Custom Range Report (${fromStr || 'Start'} to ${toStr || 'End'})`;
+            }
+
+            filtered.sort((a,b) => `${a.date} ${a.timeFrom || ''}`.localeCompare(`${b.date} ${b.timeFrom || ''}`));
+            currentReportFilteredEvents = filtered;
+
+            document.getElementById('reportTitleText').innerText = titleStr;
+            document.getElementById('reportSubText').innerText = `Total records: ${filtered.length} | Generated on ${new Date().toLocaleDateString()}`;
+            document.getElementById('reportCountLabel').innerText = `${filtered.length} records matching criteria`;
+
+            // Badge statistics
+            const pendingCount = filtered.filter(e => e.status === 'Pending').length;
+            const completedCount = filtered.filter(e => e.status === 'Completed').length;
+            badgeContainer.innerHTML = `
+                <span class="px-2.5 py-1 bg-amber-100 text-amber-800 rounded font-semibold">Pending: ${pendingCount}</span>
+                <span class="px-2.5 py-1 bg-emerald-100 text-emerald-800 rounded font-semibold">Completed: ${completedCount}</span>
+            `;
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="text-center py-8 text-slate-400 italic">No entries found for this report period.</td></tr>`;
+                return;
+            }
+
+            let html = '';
+            filtered.forEach(evt => {
+                html += `
+                    <tr class="hover:bg-slate-50">
+                        <td class="p-2.5 whitespace-nowrap font-medium text-slate-800">${evt.date} (${evt.timeFrom}-${evt.timeTo})</td>
+                        <td class="p-2.5 font-bold text-slate-900">${evt.name}</td>
+                        <td class="p-2.5 font-mono text-blue-600">${evt.partNumber}</td>
+                        <td class="p-2.5"><span class="px-2 py-0.5 text-[10px] font-semibold rounded-full border ${getStatusBadgeClass(evt.status)}">${evt.status}</span></td>
+                        <td class="p-2.5"><span class="bg-slate-100 px-2 py-0.5 rounded text-slate-700 font-medium text-[11px]">${evt.source || 'WhatsApp'}</span></td>
+                        <td class="p-2.5 font-mono text-slate-600">${evt.mobile}</td>
+                        <td class="p-2.5 text-slate-600">${evt.address}</td>
+                        <td class="p-2.5 text-slate-500">${evt.remarks || '-'}</td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+        }
+
+        function printReport() {
+            window.print();
+        }
+
+        function exportReportCSV() {
+            if (currentReportFilteredEvents.length === 0) {
+                showToast('No records to export.', 'error');
+                return;
+            }
+
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += "Date,Time From,Time To,Customer Name,Part Number,Status,Source,Mobile,Address,Remarks\r\n";
+
+            currentReportFilteredEvents.forEach(e => {
+                const row = [
+                    e.date,
+                    e.timeFrom || '',
+                    e.timeTo || '',
+                    `"${(e.name || '').replace(/"/g, '""')}"`,
+                    `"${(e.partNumber || '').replace(/"/g, '""')}"`,
+                    e.status,
+                    e.source || 'WhatsApp',
+                    `"${(e.mobile || '').replace(/"/g, '""')}"`,
+                    `"${(e.address || '').replace(/"/g, '""')}"`,
+                    `"${(e.remarks || '').replace(/"/g, '""')}"`
+                ];
+                csvContent += row.join(",") + "\r\n";
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `Tekshawn_Calendar_Report_${new Date().toISOString().split('T')[0]}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showToast('Report successfully exported to Excel/CSV!', 'success');
+        }
+
+        // Toast Notification
         function showToast(message, type = 'success') {
             const toast = document.getElementById('toast');
             const msgEl = document.getElementById('toastMessage');
